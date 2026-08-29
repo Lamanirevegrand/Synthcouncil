@@ -1,4 +1,4 @@
-import { generate } from '@genkit-ai/ai';
+import { ai } from '../config/ai.js';
 import { gemini15Flash } from '@genkit-ai/googleai';
 import { AgentResponseSchema, type AgentResponse } from '@synthcouncil/schemas';
 
@@ -24,30 +24,21 @@ ${context.length > 0 ? context.join('\n---\n') : 'No previous debate steps.'}
 Analyze the technical constraints and deliver your verdict.
 `;
 
-    const response = await generate({
+    // Utilisation de l'instance 'ai' et intégration native de Zod
+    const response = await ai.generate({
         model: gemini15Flash,
         system: TECH_SYSTEM_PROMPT,
         prompt: promptContent,
         config: {
-            temperature: 0.2, // Faible température pour maximiser la rigueur technique
+            temperature: 0.2, // Faible température pour la rigueur technique
         },
+        // Genkit force le LLM à respecter ce schéma et le parse automatiquement
+        output: { schema: AgentResponseSchema }
     });
 
-    const rawText = response.text();
-
-    // Tente d'extraire le bloc JSON même si le LLM l'englobe dans des balises markdown
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-        throw new Error('Tech Agent failed to produce a structured JSON response.');
+    if (!response.output) {
+        throw new Error('Tech Agent failed to produce a structured response matching the schema.');
     }
 
-    const parsedJson = JSON.parse(jsonMatch[0]);
-
-    // Validation stricte contre le contrat Zod du monorepo
-    return AgentResponseSchema.parse({
-        agentId: 'tech',
-        confidenceScore: parsedJson.confidenceScore,
-        verdict: parsedJson.verdict,
-        sources: parsedJson.sources ?? [],
-    });
+    return response.output;
 };

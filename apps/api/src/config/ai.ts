@@ -1,13 +1,10 @@
-import { configureGenkit } from '@genkit-ai/core';
+import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 import { env } from './env.js';
 
-configureGenkit({
+// Initialisation de l'instance Genkit (Standard 0.9+)
+export const ai = genkit({
     plugins: [
-        googleAI({
-            apiKey: env.GEMINI_API_KEY,
-        }),
+        googleAI({ apiKey: env.GEMINI_API_KEY }),
     ],
-    logLevel: env.NODE_ENV === 'development' ? 'debug' : 'info',
-    enableTracingAndMetrics: true,
 });
