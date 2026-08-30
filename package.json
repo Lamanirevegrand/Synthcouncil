@@ -14,7 +14,7 @@
     "test": "pnpm -r test",
     "dev:api": "pnpm --filter @synthcouncil/api dev",
     "dev:web": "pnpm --filter @synthcouncil/web dev",
-    "dev": "pnpm --parallel dev:api dev:web"
+    "dev": "concurrently -n api,web -c blue,green \"pnpm dev:api\" \"pnpm dev:web\""
   },
   "keywords": [
     "webmcp",
@@ -24,6 +24,9 @@
     "hackathon"
   ],
   "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"
