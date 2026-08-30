@@ -1,0 +1,19 @@
+# Netlify configuration for the SynthCouncil web client.
+# The site is fully static: it never holds API keys — it only relays requests
+# to the engine API (Render) through PUBLIC_API_URL.
+
+[build]
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @synthcouncil/web build"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Production origin + engine URL. Set PUBLIC_API_URL to your Render service,
+# e.g. https://synthcouncil-api.onrender.com/api
+[context.production.environment]
+  PUBLIC_API_URL = "https://synthcouncil-api.onrender.com/api"
+
+# Local preview (netlify dev) talks to a locally running engine.
+[context.deploy-preview.environment]
+  PUBLIC_API_URL = "http://localhost:4000/api"
