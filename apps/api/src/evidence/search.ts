@@ -105,7 +105,7 @@ async function duckDuckGoSearch(query: string, limit: number): Promise<SearchRes
   return results;
 }
 
-function mockSearch(query: string): SearchResult[] {
+export function mockSearch(query: string): SearchResult[] {
   return [
     {
       title: 'Official API documentation (mock)',

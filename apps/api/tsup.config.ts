@@ -7,6 +7,7 @@ export default defineConfig({
   target: 'node20',
   sourcemap: true,
   clean: true,
-  bundle: true,
-  skipNodeModulesBundle: true,
+  // Bundle the workspace TypeScript package (Node cannot run TS sources);
+  // everything else stays external and is installed on the host.
+  noExternal: ['@synthcouncil/schemas'],
 });
