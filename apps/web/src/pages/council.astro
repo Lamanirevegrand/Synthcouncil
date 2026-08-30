@@ -1,0 +1,11 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CouncilBoard from '../components/CouncilBoard';
+---
+
+<Layout>
+  <nav class="back-nav">
+    <a href="/">← Convene another council</a>
+  </nav>
+  <CouncilBoard client:load />
+</Layout>

@@ -1,14 +1,26 @@
 {
-  "name": "web",
+  "name": "@synthcouncil/web",
   "version": "1.0.0",
-  "description": "",
+  "private": true,
   "type": "module",
-  "main": "index.js",
+  "description": "SynthCouncil web client — Astro + React frontend that registers WebMCP tools and relays council sessions to the engine API.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.26.2"
+  "dependencies": {
+    "@astrojs/react": "^4.2.0",
+    "@synthcouncil/schemas": "workspace:*",
+    "astro": "^5.12.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.5.4"
+  }
 }
