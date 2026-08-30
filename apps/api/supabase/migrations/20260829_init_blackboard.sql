@@ -1,13 +1,21 @@
--- Table pour stocker l'état du Tableau Noir (Blackboard)
-CREATE TABLE blackboard_sessions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    status VARCHAR(50) NOT NULL DEFAULT 'idle',
-    original_query TEXT NOT NULL,
-    contributions JSONB NOT NULL DEFAULT '[]'::jsonb,
-    human_redirects JSONB NOT NULL DEFAULT '[]'::jsonb,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- SynthCouncil schema (backend-only access via the service key; RLS stays off).
+-- Run this against your Supabase project: Supabase Dashboard > SQL Editor.
+
+create table if not exists public.sessions (
+    id         uuid primary key default gen_random_uuid(),
+    topic      text not null,
+    context    text not null default '',
+    status     text not null default 'created',
+    config     jsonb not null default '{}'::jsonb,
+    error      text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
 );
 
--- Note de sécurité : L'accès RLS (Row Level Security) est désactivé ici 
--- car seul notre backend sécurisé par Service Key manipulera ces données.
+create table if not exists public.blackboards (
+    session_id uuid primary key references public.sessions (id) on delete cascade,
+    data       jsonb not null,
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists sessions_updated_at_idx on public.sessions (updated_at desc);

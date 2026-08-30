@@ -1,30 +1,44 @@
-import express, { type Express, type Request, type Response } from 'express';
 import cors from 'cors';
-import { env } from './config/env.js';
+import express, { type Express } from 'express';
+import { allowedOrigins, env } from './config/env.js';
+import { createEvidenceProvider } from './evidence/provider.js';
+import { createLlmClient, resolveLlmConfig } from './llm/client.js';
 import { errorHandler } from './middlewares/error.middleware.js';
-import { blackboardRouter } from './routes/blackboard.routes.js';
+import { CouncilEngine } from './orchestrator/engine.js';
+import { createSessionsRouter } from './routes/sessions.routes.js';
+import { createStore } from './storage/index.js';
 
 export const buildApp = (): Express => {
-    const app = express();
+  const app = express();
 
-    app.use(cors({
-        origin: env.FRONTEND_URL,
-        methods: ['GET', 'POST', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-        credentials: true
-    }));
+  // Strict CORS: only the declared frontend origins may call the API.
+  app.use(
+    cors({
+      origin: allowedOrigins,
+      methods: ['GET', 'POST', 'OPTIONS'],
+      allowedHeaders: ['Content-Type'],
+    })
+  );
 
-    app.use(express.json({ limit: '1mb' }));
+  app.use(express.json({ limit: '1mb' }));
 
-    app.get('/health', (_req: Request, res: Response) => {
-        res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-    });
+  app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
 
-    // Injection des routes modulaires
-    app.use('/api/blackboard', blackboardRouter);
+  const store = createStore();
+  const llm = createLlmClient(resolveLlmConfig());
+  const evidence = createEvidenceProvider();
+  const engine = new CouncilEngine({ store, llm, evidence });
 
-    // Le middleware d'erreur doit impérativement être le dernier
-    app.use(errorHandler);
+  console.log(
+    `[api] llm=${llm.provider}/${llm.model} storage=${store.mode} evidence=${evidence.mode} frontend=${allowedOrigins.join(', ')}`
+  );
 
-    return app;
+  app.use('/api/sessions', createSessionsRouter({ store, engine }));
+
+  // The error middleware must stay last.
+  app.use(errorHandler);
+
+  return app;
 };
