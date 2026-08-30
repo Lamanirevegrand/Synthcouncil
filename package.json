@@ -1,14 +1,27 @@
 {
   "name": "synthcouncil",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "SynthCouncil — an adversarial council of AI agents that debates complex problems using live WebMCP-sourced evidence, arbitrated by a human.",
+  "packageManager": "pnpm@10.26.2",
+  "engines": {
+    "node": ">=20.0.0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.26.2"
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "dev:api": "pnpm --filter @synthcouncil/api dev",
+    "dev:web": "pnpm --filter @synthcouncil/web dev",
+    "dev": "pnpm --parallel dev:api dev:web"
+  },
+  "keywords": [
+    "webmcp",
+    "ai-agents",
+    "adversarial-ai",
+    "blackboard",
+    "hackathon"
+  ],
+  "license": "MIT"
 }

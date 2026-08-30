@@ -1,24 +1,35 @@
-# Dépendances
+# Dependencies
 node_modules/
 .pnpm-store/
 
-# Build & Logs
+# Build output
 dist/
 build/
 .astro/
+coverage/
+*.tsbuildinfo
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Environnement
+# Environment
 .env
 .env.*
 !.env.example
 
+# Deployment tooling
+.netlify/
+.vercel/
+.render/
+render.yaml.local
+
 # OS
 .DS_Store
+Thumbs.db
 
-#fichiers de regroupement
+# Scratch / export artifacts (kept out of the repository on purpose)
 synthcouncil_export.md
 export.py
