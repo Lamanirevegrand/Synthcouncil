@@ -4,10 +4,10 @@ import { AGENT_META, AGENT_ORDER } from '../lib/agents';
 import { api, ApiClientError } from '../lib/api';
 
 const DEMO_TOPIC =
-  'Design an asynchronous system to manage informal tournaments (Maracana, 3x3) via a WhatsApp bot: automate signups, generate a round-robin schedule and collect fees, while staying clear of gambling legislation.';
+  'Launch an AI meeting-notes SaaS for small teams: automatic transcription, summaries and action items — with a freemium model and EU data residency from day one.';
 
 const DEMO_CONTEXT =
-  'The platform is a weekend football community. Fees are small (2-5 €/player). No prize pools are planned.';
+  'Bootstrapped team of 3. Target: 10,000 free users in year one, 5% conversion to a €12/month Pro plan. No external funding.';
 
 export default function CreateCouncilForm() {
   const [topic, setTopic] = useState('');
@@ -73,7 +73,7 @@ export default function CreateCouncilForm() {
       <div className="card-head">
         <h3>⚖️ Convene the council</h3>
         <button type="button" className="btn btn-ghost btn-small" onClick={loadDemo}>
-          Fill demo topic (WhatsApp tournaments)
+          Fill demo topic (AI meeting notes)
         </button>
       </div>
 
@@ -82,7 +82,7 @@ export default function CreateCouncilForm() {
         <textarea
           value={topic}
           onChange={(event) => setTopic(event.target.value)}
-          placeholder="e.g. Design an async WhatsApp bot that manages informal 3x3 tournaments..."
+          placeholder="e.g. Launch an AI meeting-notes SaaS with a freemium model…"
           rows={4}
           required
         />

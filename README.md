@@ -18,8 +18,8 @@ the debate literally pauses until you arbitrate.
   not incidental.
 - **Live evidence, not vibes** — agents design their own search queries, fetch pages, and write
   Zod-validated findings with real URLs. No invented citations survive the contracts.
-- **Human-in-the-loop** — round one pauses for your directive (e.g. *"Tech, verify direct payment
-  to the venue organizer"*); round two runs with it in context, then the council delivers a
+- **Human-in-the-loop** — round one pauses for your directive (e.g. *"Tech, verify transcription
+  pricing at our projected volume"*); round two runs with it in context, then the council delivers a
   structured verdict: recommendations with owners, risks with severities, and every source.
 - **WebMCP native** — the web client registers `document.modelContext.registerTool`, so the
   browser's model itself can convene, run, read and arbitrate councils.
@@ -74,9 +74,10 @@ pnpm --filter @synthcouncil/api dev        # http://localhost:4000
 pnpm --filter @synthcouncil/web dev        # http://localhost:4321
 ```
 
-Open http://localhost:4321, click **Fill demo topic**, convene the council, and watch the four
-agents investigate → debate → pause for **your** arbitration → deliver a verdict. Mock outputs are
-clearly labeled `[mock]`.
+Open http://localhost:4321, click **Fill demo topic (AI meeting notes)** — a business scenario:
+*launch an AI meeting-notes SaaS with a freemium model and EU data residency* — convene the council,
+and watch the four agents investigate → debate → pause for **your** arbitration → deliver a verdict.
+Mock outputs are clearly labeled `[mock]`.
 
 **Run with a real LLM (recommended for demos):**
 

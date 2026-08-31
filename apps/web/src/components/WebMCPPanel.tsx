@@ -2,9 +2,8 @@ import { useMemo, useState } from 'react';
 import { getRegisteredTools, isWebMCPAvailable, registerWebMCPTools } from '../lib/webmcp';
 
 /**
- * Panel showing the WebMCP status: whether the browser exposes
- * document.modelContext, which council tools are registered, and the exact
- * registerTool call the judges will find in this repository.
+ * WebMCP status panel: is the browser's model context available, which council
+ * tools are registered, and the exact registerTool call this repo ships.
  */
 export default function WebMCPPanel() {
   const [available, setAvailable] = useState(() => isWebMCPAvailable());
@@ -51,12 +50,10 @@ export default function WebMCPPanel() {
         </span>
       </div>
 
-      <p className="muted">
-        SynthCouncil exposes itself to the browser's model through{' '}
-        <code>document.modelContext.registerTool</code> — the OpenAI WebMCP API. In the ChatGPT
-        desktop browser or Chrome 149+ (with <code>chrome://flags/#enable-webmcp-testing</code>),
-        the model itself can convene a council, launch the investigation, read the blackboard and
-        arbitrate — exactly like a human in the UI.
+      <p className="muted" style={{ fontSize: '0.9rem' }}>
+        The council is exposed to the browser's model via <code>document.modelContext.registerTool</code>.
+        In the ChatGPT desktop browser or Chrome 149+ (flag <code>chrome://flags/#enable-webmcp-testing</code>),
+        the model can convene, run, read and arbitrate councils — exactly like a human in the UI.
       </p>
 
       <div className="tool-grid">
@@ -64,7 +61,7 @@ export default function WebMCPPanel() {
         {tools.map((tool) => (
           <div className="tool-card" key={tool.name}>
             <code className="tool-name">{tool.name}</code>
-            <p className="muted">{tool.description}</p>
+            <p>{tool.description}</p>
             <details>
               <summary>inputSchema</summary>
               <pre>{JSON.stringify(tool.inputSchema, null, 2)}</pre>
@@ -78,7 +75,7 @@ export default function WebMCPPanel() {
         <pre className="snippet">{snippet}</pre>
       </details>
 
-      <button type="button" className="btn btn-ghost" onClick={handleRegister}>
+      <button type="button" className="btn btn-ghost btn-small" onClick={handleRegister}>
         Re-register tools
       </button>
     </section>

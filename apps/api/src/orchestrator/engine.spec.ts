@@ -61,7 +61,7 @@ describe('CouncilEngine (mock LLM + memory store)', () => {
   it('runs the full DAG to completion without an arbitration gate', async () => {
     const { store, engine } = makeEngine(false);
     const session = await store.createSession({
-      topic: 'Deploy a WhatsApp tournament platform',
+      topic: 'Launch an AI meeting-notes SaaS for small teams',
       config: {
         agents: ['tech', 'finance', 'risk', 'strategy'],
         debateRounds: 2,
@@ -83,7 +83,7 @@ describe('CouncilEngine (mock LLM + memory store)', () => {
   it('pauses for the human arbiter and resumes to a verdict', async () => {
     const { store, engine } = makeEngine(true);
     const session = await store.createSession({
-      topic: 'Automate inscriptions and collect fees for 3x3 tournaments',
+      topic: 'Design the freemium pricing model for an AI meeting-notes SaaS',
       config: {
         agents: ['tech', 'finance', 'risk', 'strategy'],
         debateRounds: 2,
@@ -98,7 +98,7 @@ describe('CouncilEngine (mock LLM + memory store)', () => {
     expect(paused?.blackboard.positions).toHaveLength(4); // round 1 only
 
     await engine.arbitrate(session.id, {
-      directive: 'Tech, check whether we can integrate direct payment to the venue organizer so we never touch the pot.',
+      directive: 'Tech, verify server-side transcription pricing at our projected volume before we lock the freemium tier.',
       targetAgent: 'tech',
     });
     await run;

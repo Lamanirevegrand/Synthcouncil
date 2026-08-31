@@ -216,10 +216,10 @@ export default function CouncilBoard({ sessionId }: { sessionId?: string }) {
 
       {session.status === 'created' && (
         <section className="card">
-          <h3>⏱️ The council is convened but has not started.</h3>
+          <h3>⏱️ Ready to begin</h3>
           <p className="muted">
-            Launching the investigation makes each expert search the live web for evidence. Progress
-            streams into this page in real time.
+            Launching the investigation sends every expert to the live web for cited evidence —
+            progress streams into this page in real time.
           </p>
           <button type="button" className="btn btn-primary" onClick={handleStart} disabled={starting}>
             {starting ? 'Convening…' : 'Start the investigation'}
@@ -377,8 +377,8 @@ function ArbitrationPanel({ sessionId }: { sessionId: string }) {
     <section className="card arbitration-panel">
       <h3>🛑 Your arbitration is required</h3>
       <p className="muted">
-        Round 1 is complete. As arbiter you can reorient the debate — for example:
-        <em> “Tech, verify whether we can integrate direct payment to the venue organizer so we never touch the pot.”</em>
+        Round 1 is done. Steer round 2 — for example:
+        <em> “Tech, verify server-side transcription pricing at our projected volume before we lock the freemium tier.”</em>
       </p>
       <label className="field">
         <span>Directive to the council</span>

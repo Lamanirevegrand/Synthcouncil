@@ -7,12 +7,12 @@ debates a complex problem under a human arbiter, grounded in **live web evidence
 kill the *compliance bias* of a single AI: one model will agree with you and produce consensus
 text; a committee of isolated, adversarial personas that must **prove claims with sources** cannot.
 
-The reference use case — designed into the demo — is a **WhatsApp sports-tournament platform**
-(Maracana, 3×3): automating signups, round-robin scheduling and fee collection while staying clear
-of gambling legislation. The council investigates Twilio-style stateless webhooks (Tech), mobile
-money fees and escrow patterns (Finance), amateur-pool / betting requalification risk (Risk) and
-sequencing (Strategy); the arbiter reorients the debate mid-way; the verdict lands with
-recommendations, risks and documentation links.
+The reference use case — designed into the demo — is a **business/IT launch**: an *AI meeting-notes
+SaaS for small teams* — automatic transcription, summaries, action items, a freemium model and EU
+data residency from day one. The council investigates stateless webhook architecture and
+transcription API pricing (Tech), freemium unit economics and cost curves (Finance), GDPR and
+AI-liability exposure (Risk) and go-to-market sequencing (Strategy); the arbiter reorients the
+debate mid-way; the verdict lands with recommendations, risks and documentation links.
 
 ## 2. Core pattern: Blackboard + DAG orchestration
 

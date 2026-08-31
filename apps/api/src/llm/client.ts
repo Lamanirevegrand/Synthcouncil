@@ -210,36 +210,36 @@ function createMockLlmClient(config: ResolvedLlmConfig): LlmClient {
       if (anySchema === QueryPlanSchema) {
         return {
           queries: [
-            `${topic} — official documentation and integration guide`,
-            `${topic} — pricing, fees and platform limits`,
+            `${topic} — official API documentation and architecture guide`,
+            `${topic} — pricing, unit economics and benchmarks`,
           ],
         };
       }
 
       if (anySchema === InvestigationOutputSchema) {
         return {
-          summary: `[mock] Reconnaissance complete for "${topic}". Three claims were validated against synthetic evidence sources; open questions remain about jurisdiction-specific enforcement.`,
+          summary: `[mock] Reconnaissance complete for "${topic}". Three claims were validated against synthetic evidence sources; open questions remain about provider pricing and GDPR specifics.`,
           claims: [
             {
-              claim: `A stateless server architecture with webhook callbacks is the recommended integration pattern for "${topic}".`,
+              claim: `A stateless, webhook-driven pipeline with asynchronous jobs is the recommended architecture for "${topic}".`,
               evidence:
-                '[mock] The Twilio-style webhook model allows asynchronous delivery with idempotent retries and no long-lived connections. Synthetic source supports this pattern.',
-              sources: [{ url: 'https://docs.example.com/stateless-webhooks', title: 'Webhook best practices (example)' }],
+                '[mock] Official docs recommend webhook callbacks with idempotent retries and no long-lived connections — a good fit for batch jobs like transcription. Synthetic source supports this pattern.',
+              sources: [{ url: 'https://docs.example.com/webhook-architecture', title: 'Webhook architecture (example)' }],
             },
             {
-              claim: `Micro-transaction volume makes per-transaction fees the dominant cost driver for "${topic}".`,
+              claim: `Per-unit API fees dominate the cost base of a freemium product for "${topic}".`,
               evidence:
-                '[mock] Aggregating settlements and moving fees to a per-round model reduces the effective rate. Figures are illustrative.',
-              sources: [{ url: 'https://docs.example.com/payment-fees', title: 'Payment rail fee comparison (example)' }],
+                '[mock] Aggregating volume and capping the free tier keeps unit economics viable; figures are illustrative.',
+              sources: [{ url: 'https://docs.example.com/api-pricing', title: 'API pricing comparison (example)' }],
             },
             {
-              claim: `A purely amateur, no-payout structure keeps "${topic}" clear of gambling-law requalification in most jurisdictions.`,
+              claim: `EU data residency and GDPR obligations shape the product from day one for "${topic}".`,
               evidence:
-                '[mock] The line between skill-based tournament entry and illegal betting depends on prize pools and randomization; a no-cash-out model is safest.',
-              sources: [{ url: 'https://docs.example.com/amateur-pool-law', title: 'Amateur pools and gambling law (example)' }],
+                '[mock] Audio and transcripts are personal data; EU-hosted processing with deletion APIs is the baseline posture.',
+              sources: [{ url: 'https://docs.example.com/gdpr-processing', title: 'GDPR and AI processing (example)' }],
             },
           ],
-          openQuestions: ['Which payment rails are available in the target country?', 'Does the organizer hold a payment license?'],
+          openQuestions: ['Which transcription provider offers the best price/accuracy trade-off?', 'What does enterprise GDPR compliance require for audio storage?'],
         };
       }
 
@@ -248,10 +248,10 @@ function createMockLlmClient(config: ResolvedLlmConfig): LlmClient {
         return {
           stance: 'concerns',
           headline: `[mock] ${agentLine} raises structured concerns`,
-          argument: `[mock] Evidence supports feasibility, but three objections must be resolved before a green light: verification of official docs, fee transparency, and regulatory posture.`,
+          argument: `[mock] The evidence supports feasibility, but three objections must be resolved before a green light: provider pricing, data residency, and conversion assumptions.`,
           objections: [
-            { against: 'tech', point: 'Verify webhook security (signatures, replay protection) before trusting the integration.' },
-            { against: 'finance', point: 'Publish the exact fee model — hidden per-transaction costs break the unit economics.' },
+            { against: 'tech', point: 'Verify webhook security (signatures, replay protection) and retry semantics before trusting the pipeline.' },
+            { against: 'finance', point: 'Publish the real per-unit cost curve — hidden API fees break the freemium model.' },
           ],
           supportingFindingIds: [],
           sources: [{ url: 'https://docs.example.com/verdict', title: 'Council evidence log (example)' }],
@@ -260,21 +260,21 @@ function createMockLlmClient(config: ResolvedLlmConfig): LlmClient {
 
       if (anySchema === VerdictOutputSchema) {
         return {
-          summary: `[mock] Verdict on "${topic}": proceed with a phased rollout — validate the stateless integration first, then the payment flow, with compliance review before any real-money feature ships.`,
+          summary: `[mock] Verdict on "${topic}": proceed with a phased rollout — ship the stateless pipeline first, cap the free tier to protect margins, and publish the GDPR posture before any enterprise lead.`,
           recommendations: [
-            { title: 'Build the stateless MVP first', detail: 'Ship webhook-based orchestration with an in-memory queue before adding billing.', owner: 'tech' },
-            { title: 'Route payments through the venue organizer', detail: 'Never let the platform touch the pot; integrate direct-to-organizer transfers.', owner: 'finance' },
-            { title: 'Document the amateur-pool exemption', detail: 'Keep prize pools zero and publish the legal rationale per jurisdiction.', owner: 'risk' },
+            { title: 'Ship a stateless MVP with async jobs', detail: 'Webhook-based pipeline with retry budgets and idempotency keys before adding billing.', owner: 'tech' },
+            { title: 'Cap the freemium tier at 60 min/month', detail: 'Protects unit economics while the conversion loop matures.', owner: 'finance' },
+            { title: 'Publish a data-processing addendum from day one', detail: 'EU data residency + deletion APIs before the first enterprise lead.', owner: 'risk' },
           ],
           risks: [
-            { title: 'Payment-provider ToS changes', detail: 'A silent ToS update can block payouts overnight; keep a migration path.', severity: 'high' },
-            { title: 'Requalification as betting', detail: 'Any randomized prize distribution may trigger gambling law; avoid random draws.', severity: 'high' },
+            { title: 'Transcription API price changes', detail: 'A silent price change can destroy gross margin; benchmark fallback providers.', severity: 'high' },
+            { title: 'Mis-transcription liability', detail: 'AI summaries presented as fact create liability; label AI-generated output and keep human review flows.', severity: 'medium' },
           ],
           sources: [
             { url: 'https://docs.example.com/verdict', title: 'Council evidence log (example)' },
-            { url: 'https://docs.example.com/amateur-pool-law', title: 'Amateur pools and gambling law (example)' },
+            { url: 'https://docs.example.com/gdpr-processing', title: 'GDPR and AI processing (example)' },
           ],
-          confidence: 62,
+          confidence: 64,
         };
       }
 

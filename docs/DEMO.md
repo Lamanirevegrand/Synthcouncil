@@ -16,12 +16,13 @@ Use this to prepare a live walkthrough (video or judge session).
 
 1. **Landing (15 s)** — explain the concept in one sentence: four adversarial AI experts debating
    your problem with live, cited evidence, arbitrated by you.
-2. **Convene (30 s)** — "Fill demo topic" (WhatsApp tournaments) → Convene. Show the expert
+2. **Convene (30 s)** — "Fill demo topic (AI meeting notes)" → Convene. Show the expert
    checkboxes and debate-rounds option.
 3. **Investigate (60 s)** — "Start the investigation". Point out findings streaming in with
    clickable source URLs. If a source fails, note that agents degrade gracefully.
 4. **Debate + arbitration (60 s)** — show positions with objections; when the panel appears, type
-   *"Tech, verify direct payment to the venue organizer so we never touch the pot."* → Send.
+   *"Tech, verify server-side transcription pricing at our projected volume before we lock the
+   freemium tier."* → Send.
 5. **Verdict (45 s)** — recommendations with owners, risks with severities, sources, confidence.
 6. **WebMCP bridge (30 s)** — the panel listing the four registered tools; in a WebMCP browser,
    ask the model to convene its own council via `council_create`.

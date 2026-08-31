@@ -6,17 +6,18 @@ import WebMCPPanel from '../components/WebMCPPanel';
 
 <Layout>
   <section class="hero">
-    <p class="eyebrow">Adversarial AI · Live WebMCP evidence · Human-in-the-loop</p>
+    <p class="eyebrow">Adversarial AI · Live web evidence · Human arbitration</p>
     <h1>The Council of Agents</h1>
     <p class="tagline">
-      Four adversarial AI experts — <strong>Tech</strong>, <strong>Finance</strong>,
-      <strong>Risk</strong> and <strong>Strategy</strong> — debate your hardest problem using
-      <em>live, cited web evidence</em> instead of confident guesses. You hold the gavel.
+      Four experts — <strong>Tech</strong>, <strong>Finance</strong>, <strong>Risk</strong>,
+      <strong>Strategy</strong> — debate your problem with cited web evidence, then stop and wait
+      for your verdict.
     </p>
-    <div class="hero-notes">
-      <span>🔎 every claim must be sourced</span>
-      <span>💥 no consensus-fawning — positions are attacked</span>
-      <span>🛑 the debate pauses until you arbitrate</span>
+    <div class="hero-chips">
+      <span class="chip">🔎 Every claim sourced</span>
+      <span class="chip">💥 Positions get attacked</span>
+      <span class="chip">🛑 You arbitrate mid-debate</span>
+      <span class="chip">🌐 WebMCP native</span>
     </div>
   </section>
 
@@ -24,70 +25,42 @@ import WebMCPPanel from '../components/WebMCPPanel';
     <CreateCouncilForm client:load />
 
     <aside class="card how-card" id="how">
-      <h3>How a session unfolds</h3>
-      <ol class="steps">
-        <li>
-          <strong>Convene.</strong> State the problem, pick the experts and the number of debate
-          rounds.
-        </li>
-        <li>
-          <strong>Investigate.</strong> Each agent designs its own web searches, fetches pages and
-          writes <em>Zod-validated findings</em> with citations onto the shared blackboard.
-        </li>
-        <li>
-          <strong>Debate.</strong> Round by round, every agent must defend its stance and attack the
-          others — the architecture <em>forces</em> disagreement out of the models.
-        </li>
-        <li>
-          <strong>Arbitrate.</strong> The engine pauses and waits for you. Inject a directive —
-          e.g. <em>“Tech, verify direct payment to the venue organizer”</em> — and round two runs
-          with your instruction in context.
-        </li>
-        <li>
-          <strong>Verdict.</strong> The council synthesizes a recommendation set, top risks and
-          every source consulted — one validated JSON contract.
-        </li>
+      <div class="how-head">
+        <h3>How a session works</h3>
+        <span class="pill">≈ 3–5 min</span>
+      </div>
+      <ol class="how-list">
+        <li><b>1 · Convene.</b> State the problem, pick the experts.</li>
+        <li><b>2 · Investigate.</b> Agents search the live web, post cited findings.</li>
+        <li><b>3 · Debate.</b> Each expert defends its stance, attacks the others.</li>
+        <li><b>4 · You arbitrate.</b> The council pauses until you steer it.</li>
+        <li><b>5 · Verdict.</b> Recommendations, risks, sources — one clean document.</li>
       </ol>
-      <p class="muted">
-        A single AI tends to agree with you. A council of isolated, adversarial agents with a
-        mandatory citation discipline cannot — that is the anti-bias core of SynthCouncil.
-      </p>
     </aside>
   </div>
 
   <WebMCPPanel client:load />
 
-  <section class="card tech-card">
-    <h3>⚡ Built for the OpenAI WebMCP hackathon</h3>
-    <div class="tech-grid">
-      <div>
-        <h4>WebMCP native</h4>
-        <p class="muted">
-          The web client registers <code>document.modelContext.registerTool</code> so the browser's
-          model can convene, run, read and arbitrate councils itself.
-        </p>
-      </div>
-      <div>
-        <h4>OpenRouter-powered</h4>
-        <p class="muted">
-          The engine speaks OpenAI-compatible chat completions to OpenRouter (Groq by default,
-          Claude/GPT/others available) — no vendor lock-in.
-        </p>
-      </div>
-      <div>
-        <h4>Blackboard + DAG</h4>
-        <p class="muted">
-          Agents never talk directly. An orchestrator reads the shared blackboard and distributes
-          the floor — stable, replayable, auditable.
-        </p>
-      </div>
-      <div>
-        <h4>Zod-locked contracts</h4>
-        <p class="muted">
-          Every model output is parsed and validated by shared Zod schemas; a hallucinated JSON
-          shape can never crash the debate.
-        </p>
-      </div>
+  <section class="strip">
+    <div class="strip-item">
+      <span class="strip-icon">🔌</span>
+      <b>WebMCP native</b>
+      <span class="muted">document.modelContext.registerTool — the browser's model can run the council itself.</span>
+    </div>
+    <div class="strip-item">
+      <span class="strip-icon">⚡</span>
+      <b>OpenRouter-powered</b>
+      <span class="muted">Groq by default; Claude, GPT and more via one key.</span>
+    </div>
+    <div class="strip-item">
+      <span class="strip-icon">🧩</span>
+      <b>Zod contracts</b>
+      <span class="muted">A hallucinated JSON shape can never break a debate.</span>
+    </div>
+    <div class="strip-item">
+      <span class="strip-icon">🧠</span>
+      <b>Blackboard + DAG</b>
+      <span class="muted">Agents never talk directly — the orchestrator distributes the floor.</span>
     </div>
   </section>
 </Layout>

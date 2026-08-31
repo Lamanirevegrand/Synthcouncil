@@ -154,7 +154,7 @@ const councilDirectTool: WebMCPTool = {
       sessionId: { type: 'string', description: 'The session id.' },
       directive: {
         type: 'string',
-        description: 'Your instruction to the council, e.g. "Tech, verify direct payment to the venue organizer".',
+        description: 'Your instruction to the council, e.g. "Tech, verify transcription pricing at our projected volume".',
       },
       targetAgent: {
         type: 'string',

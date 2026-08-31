@@ -29,8 +29,8 @@ entire value is *falsifiable, sourced reasoning about the current world*.
 
 - **You don't read, you arbitrate.** Instead of a wall of chat, the UI shows a structured
   blackboard: findings with citations, debate positions with explicit objections, and a *hard
-  pause* where the product asks for your judgment — e.g. *"Tech, verify direct payment to the venue
-  organizer so we never touch the pot."* Round two then runs with your instruction in context.
+  pause* where the product asks for your judgment — e.g. *"Tech, verify transcription pricing at
+  our projected volume."* Round two then runs with your instruction in context.
 - **Live progress, not waiting.** Server-Sent Events stream every phase, finding and objection onto
   the page in real time; you watch the council work.
 - **Trust through provenance.** Every claim links its source; the verdict lists every consulted URL
@@ -50,9 +50,10 @@ finding documents, and running a structured debate yourself. With SynthCouncil:
 - the output is a **verifiable artifact** — recommendations with owners, risks with severities, and
   the exact sources consulted — not a chat log.
 
-The demo scenario (WhatsApp tournament platform with fee collection) is a real problem where this
-matters: a purely consensual AI would happily design a payment flow; the Risk agent and the arbiter
-are what keep it on the right side of gambling law.
+The demo scenario (launching an AI meeting-notes SaaS with a freemium model) is a real problem
+where this matters: a purely consensual AI would happily bless the pricing and the architecture;
+the Finance agent (unit economics, hidden API fees) and the Risk agent (GDPR, AI-liability) — plus
+the arbiter's steering — are what keep the launch honest.
 
 ## 4. How WebMCP was implemented
 
@@ -100,10 +101,10 @@ are what keep it on the right side of gambling law.
 
 1. Open https://synthcouncil.netlify.app (Chrome 149+ with WebMCP enabled, or the ChatGPT desktop
    browser).
-2. Click **Fill demo topic (WhatsApp tournaments)** → **Convene the council**.
+2. Click **Fill demo topic (AI meeting notes)** — an AI meeting-notes SaaS launch — → **Convene the council**.
 3. On the council page, click **Start the investigation** and watch findings stream in.
-4. When the debate pauses (**Awaiting arbiter**), type a directive — e.g. *"Tech, verify direct
-   payment to the venue organizer so we never touch the pot."* — and send it.
+4. When the debate pauses (**Awaiting arbiter**), type a directive — e.g. *"Tech, verify
+   transcription pricing at our projected volume"* — and send it.
 5. Read the final **Verdict**: recommendations, risks, and clickable sources.
 6. Scroll to the **WebMCP bridge** panel to inspect the registered tools; in a WebMCP-enabled
    browser, ask the model to convene its own council.

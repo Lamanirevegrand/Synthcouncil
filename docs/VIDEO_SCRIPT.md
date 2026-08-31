@@ -16,26 +16,27 @@ section if you run long — never exceed 3 minutes.
 
 ## 0:25–0:55 — Convene + investigate
 
-> "Let's give it a real problem: a WhatsApp bot to run informal football tournaments — signups,
-> round-robin scheduling, fee collection — without tripping over gambling law. One click loads the
-> demo topic. I convene the council… and start the investigation."
+> "Let's give it a real business problem: launching an AI meeting-notes SaaS for small teams —
+> transcription, summaries, action items, a freemium model and EU data residency from day one.
+> One click loads the demo. I convene the council… and start the investigation."
 
-*Click "Fill demo topic", "Convene the council", "Start the investigation". Show findings streaming
-in — each agent's claims with source links.*
+*Click "Fill demo topic (AI meeting notes)", "Convene the council", "Start the investigation". Show
+findings streaming in — each agent's claims with source links.*
 
 ## 0:55–1:20 — The debate + the pause
 
-> "Round one: each agent attacks the others. Notice the objections — Tech challenges the cost
-> model, Risk warns about requalification as illegal betting. Then the council stops and waits for
-> me. That's the human-in-the-loop, built into the architecture: no arbitration, no verdict."
+> "Round one: each agent attacks the others. Tech challenges the cost of the pipeline, Finance
+> challenges the freemium math, Risk warns about GDPR and AI liability. Then the council stops and
+> waits for me. That's the human-in-the-loop, built into the architecture: no arbitration, no
+> verdict."
 
-*Show the positions grid and the "Your arbitration is required" panel.*
+*Show the positions grid with objections and the "Your arbitration is required" panel.*
 
 ## 1:20–1:50 — The arbitration that changes the outcome
 
-> "Here's the part I love: I can reorient the whole debate in plain language. I direct Tech to check
-> whether we can integrate direct payment to the venue organizer — so the platform never touches
-> the pot. Round two runs with my directive in context."
+> "I can reorient the whole debate in plain language. I direct Tech to verify server-side
+> transcription pricing at our projected volume before we lock the freemium tier. Round two runs
+> with my directive in context."
 
 *Type the directive, send, show round two positions appear.*
 
