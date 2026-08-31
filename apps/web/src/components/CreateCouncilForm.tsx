@@ -132,6 +132,7 @@ export default function CreateCouncilForm() {
             <option value={3}>3 — deep</option>
             <option value={4}>4 — exhaustive</option>
           </select>
+          <span className="field-hint">You can end the debate early at any pause — never more than 4 rounds.</span>
         </label>
 
         <label className="field checkbox-field">

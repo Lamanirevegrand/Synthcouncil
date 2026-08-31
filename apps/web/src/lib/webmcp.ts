@@ -147,7 +147,7 @@ const councilStatusTool: WebMCPTool = {
 const councilDirectTool: WebMCPTool = {
   name: 'council_direct',
   description:
-    'Act as the human arbiter: inject a directive into a paused SynthCouncil debate (phase "arbitrating"), optionally aimed at one agent, and resume the council toward its verdict. Or set proceed=true to continue without a directive.',
+    'Act as the human arbiter: inject a directive into a paused SynthCouncil debate (phase "arbitrating"), optionally aimed at one agent, and resume the council. Set proceed=true to continue without a directive, or stop=true to end the debate now and deliver the verdict from the rounds completed so far (max 4 rounds).',
   inputSchema: {
     type: 'object',
     properties: {
@@ -165,6 +165,10 @@ const councilDirectTool: WebMCPTool = {
         type: 'boolean',
         description: 'Set true to resume without a directive.',
       },
+      stop: {
+        type: 'boolean',
+        description: 'Set true to end the debate now and deliver the verdict (up to 4 rounds total).',
+      },
     },
     required: ['sessionId'],
   },
@@ -174,10 +178,11 @@ const councilDirectTool: WebMCPTool = {
     const directive = input.directive ? String(input.directive) : undefined;
     const targetAgent = input.targetAgent ? (String(input.targetAgent) as AgentId) : undefined;
     const proceed = input.proceed === true;
-    if (!directive && !proceed) {
-      throw new Error('Provide a directive or set proceed=true.');
+    const stop = input.stop === true;
+    if (!directive && !proceed && !stop) {
+      throw new Error('Provide a directive, or set proceed=true, or set stop=true.');
     }
-    return api.arbitrate(sessionId, { directive, targetAgent, proceed });
+    return api.arbitrate(sessionId, { directive, targetAgent, proceed, stop });
   },
 };
 

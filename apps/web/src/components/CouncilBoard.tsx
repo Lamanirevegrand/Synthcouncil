@@ -43,6 +43,7 @@ export default function CouncilBoard({ sessionId }: { sessionId?: string }) {
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+  const [arbitrationRound, setArbitrationRound] = useState<{ round: number; total: number } | null>(null);
 
   const applyEvent = useCallback((event: CouncilEvent) => {
     setSnapshot((current) => {
@@ -113,7 +114,19 @@ export default function CouncilBoard({ sessionId }: { sessionId?: string }) {
       });
 
     const source = new EventSource(API_ENDPOINTS.events(resolvedId));
-    source.onopen = () => setConnected(true);
+    source.onopen = () => {
+      setConnected(true);
+      // Catch up: refetch the snapshot in case events were missed while the
+      // stream was reconnecting (server state is always ahead of local state).
+      api
+        .getSession(resolvedId)
+        .then((snap) => {
+          if (active) setSnapshot(snap);
+        })
+        .catch(() => {
+          /* keep current state */
+        });
+    };
     source.onerror = () => setConnected(false);
 
     const handlers: Array<[string, (raw: string) => void]> = [
@@ -121,7 +134,13 @@ export default function CouncilBoard({ sessionId }: { sessionId?: string }) {
       ['finding', (raw) => applyEvent(JSON.parse(raw))],
       ['position', (raw) => applyEvent(JSON.parse(raw))],
       ['arbitration', (raw) => applyEvent(JSON.parse(raw))],
-      ['arbitration_request', () => setConnected((was) => was)],
+      [
+        'arbitration_request',
+        (raw) => {
+          const event = JSON.parse(raw) as { round?: number; totalRounds?: number };
+          setArbitrationRound({ round: event.round ?? 1, total: event.totalRounds ?? 2 });
+        },
+      ],
       ['log', (raw) => applyEvent(JSON.parse(raw))],
       ['verdict', (raw) => applyEvent(JSON.parse(raw))],
       ['error', (raw) => applyEvent(JSON.parse(raw))],
@@ -242,7 +261,11 @@ export default function CouncilBoard({ sessionId }: { sessionId?: string }) {
       {blackboard.arbitrations.length > 0 && <ArbitrationsSection arbitrations={blackboard.arbitrations} />}
 
       {session.status === 'arbitrating' && (
-        <ArbitrationPanel sessionId={resolvedId} />
+        <ArbitrationPanel
+          sessionId={resolvedId}
+          round={arbitrationRound?.round ?? 1}
+          total={arbitrationRound?.total ?? session.config.debateRounds}
+        />
       )}
 
       {blackboard.verdict && <VerdictSection verdict={blackboard.verdict} />}
@@ -350,13 +373,13 @@ function ArbitrationsSection({ arbitrations }: { arbitrations: Arbitration[] }) 
   );
 }
 
-function ArbitrationPanel({ sessionId }: { sessionId: string }) {
+function ArbitrationPanel({ sessionId, round, total }: { sessionId: string; round: number; total: number }) {
   const [directive, setDirective] = useState('');
   const [target, setTarget] = useState<string>('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const send = async (payload: { directive?: string; targetAgent?: string; proceed?: boolean }) => {
+  const send = async (payload: { directive?: string; targetAgent?: string; proceed?: boolean; stop?: boolean }) => {
     setBusy(true);
     setError(null);
     try {
@@ -364,6 +387,7 @@ function ArbitrationPanel({ sessionId }: { sessionId: string }) {
         directive: payload.directive,
         targetAgent: payload.targetAgent ? (payload.targetAgent as Session['config']['agents'][number]) : undefined,
         proceed: payload.proceed,
+        stop: payload.stop,
       });
       setDirective('');
     } catch (caught) {
@@ -377,7 +401,7 @@ function ArbitrationPanel({ sessionId }: { sessionId: string }) {
     <section className="card arbitration-panel">
       <h3>🛑 Your arbitration is required</h3>
       <p className="muted">
-        Round 1 is done. Steer round 2 — for example:
+        Round {round} of {total} complete — steer round {round + 1}, for example:
         <em> “Tech, verify server-side transcription pricing at our projected volume before we lock the freemium tier.”</em>
       </p>
       <label className="field">
@@ -410,9 +434,28 @@ function ArbitrationPanel({ sessionId }: { sessionId: string }) {
           {busy ? 'Sending…' : 'Send directive'}
         </button>
       </div>
-      <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => send({ proceed: true })}>
-        Proceed without a directive
-      </button>
+      <div className="arbitration-actions">
+        <button
+          type="button"
+          className="btn btn-primary"
+          disabled={busy || directive.trim().length === 0}
+          onClick={() => send({ directive: directive.trim(), targetAgent: target || undefined })}
+        >
+          {busy ? 'Sending…' : 'Send directive'}
+        </button>
+        <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => send({ proceed: true })}>
+          Continue without a directive
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          disabled={busy}
+          onClick={() => send({ stop: true })}
+          title="End the debate now and deliver the verdict from the rounds completed so far"
+        >
+          Finish now — deliver the verdict
+        </button>
+      </div>
       {error && <div className="alert">{error}</div>}
     </section>
   );

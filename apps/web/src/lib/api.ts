@@ -18,6 +18,7 @@ export interface ArbitratePayload {
   directive?: string;
   targetAgent?: AgentId;
   proceed?: boolean;
+  stop?: boolean;
 }
 
 export class ApiClientError extends Error {
