@@ -10,6 +10,8 @@ export const FindingEventSchema = z.object({ type: z.literal('finding'), finding
 export const PositionEventSchema = z.object({ type: z.literal('position'), position: PositionSchema });
 export const ArbitrationRequestEventSchema = z.object({
   type: z.literal('arbitration_request'),
+  round: z.number().int().positive(),
+  totalRounds: z.number().int().positive(),
   message: z.string(),
 });
 export const ArbitrationEventSchema = z.object({ type: z.literal('arbitration'), arbitration: ArbitrationSchema });

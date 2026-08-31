@@ -53,7 +53,7 @@ export interface SessionSnapshot {
 export class CouncilEngine {
   private readonly running = new Set<string>();
 
-  constructor(private readonly deps: EngineDeps) {}
+  constructor(private readonly deps: EngineDeps) { }
 
   async snapshot(sessionId: string): Promise<SessionSnapshot | null> {
     const [session, blackboard] = await Promise.all([

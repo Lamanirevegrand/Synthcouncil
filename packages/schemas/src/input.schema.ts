@@ -22,13 +22,14 @@ export const ArbitrateInputSchema = z
     directive: z.string().min(1, 'Directive cannot be empty').max(4000).optional(),
     targetAgent: AgentIdSchema.optional(),
     proceed: z.boolean().optional(),
+    stop: z.boolean().optional(),
   })
   .superRefine((value, ctx) => {
-    if (!value.directive && !value.proceed) {
+    if (!value.directive && !value.proceed && !value.stop) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['directive'],
-        message: 'Provide a directive, or set "proceed": true to continue without one',
+        message: 'Provide a directive, or set "proceed": true to continue, or "stop": true to end the debate now',
       });
     }
   });
