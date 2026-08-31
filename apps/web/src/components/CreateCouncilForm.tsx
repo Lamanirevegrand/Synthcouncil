@@ -9,6 +9,10 @@ const DEMO_TOPIC =
 const DEMO_CONTEXT =
   'Bootstrapped team of 3. Target: 10,000 free users in year one, 5% conversion to a €12/month Pro plan. No external funding.';
 
+// The demo presets the full 4-round budget so the walkthrough can showcase
+// both the per-round arbitration gates AND the early-exit to a verdict.
+const DEMO_DEBATE_ROUNDS = 4;
+
 export default function CreateCouncilForm() {
   const [topic, setTopic] = useState('');
   const [context, setContext] = useState('');
@@ -28,7 +32,7 @@ export default function CreateCouncilForm() {
     setTopic(DEMO_TOPIC);
     setContext(DEMO_CONTEXT);
     setAgents([...AGENT_ORDER]);
-    setDebateRounds(2);
+    setDebateRounds(DEMO_DEBATE_ROUNDS);
     setRequireArbitration(true);
   };
 

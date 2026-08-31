@@ -399,9 +399,14 @@ function ArbitrationPanel({ sessionId, round, total }: { sessionId: string; roun
 
   return (
     <section className="card arbitration-panel">
-      <h3>🛑 Your arbitration is required</h3>
+      <div className="arbitration-head">
+        <h3>🛑 Your arbitration is required</h3>
+        <span className="pill pill-wait">
+          Round {round} of {total} complete
+        </span>
+      </div>
       <p className="muted">
-        Round {round} of {total} complete — steer round {round + 1}, for example:
+        Steer round {round + 1} — for example:
         <em> “Tech, verify server-side transcription pricing at our projected volume before we lock the freemium tier.”</em>
       </p>
       <label className="field">
@@ -409,7 +414,7 @@ function ArbitrationPanel({ sessionId, round, total }: { sessionId: string; roun
         <textarea
           value={directive}
           onChange={(event) => setDirective(event.target.value)}
-          placeholder="Your instruction reorients the blackboard; round 2 will run with it in context."
+          placeholder={`Round ${round + 1} will run with your instruction in context.`}
           rows={3}
         />
       </label>
@@ -435,26 +440,25 @@ function ArbitrationPanel({ sessionId, round, total }: { sessionId: string; roun
         </button>
       </div>
       <div className="arbitration-actions">
-        <button
-          type="button"
-          className="btn btn-primary"
-          disabled={busy || directive.trim().length === 0}
-          onClick={() => send({ directive: directive.trim(), targetAgent: target || undefined })}
-        >
-          {busy ? 'Sending…' : 'Send directive'}
-        </button>
         <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => send({ proceed: true })}>
           Continue without a directive
         </button>
         <button
           type="button"
-          className="btn btn-ghost"
+          className="btn btn-stop"
           disabled={busy}
           onClick={() => send({ stop: true })}
           title="End the debate now and deliver the verdict from the rounds completed so far"
         >
           Finish now — deliver the verdict
         </button>
+      </div>
+      <div className="arbitration-tip">
+        <span aria-hidden>💡</span>
+        <span>
+          You can end the debate at any round — the council will synthesize the verdict immediately
+          from the rounds already completed.
+        </span>
       </div>
       {error && <div className="alert">{error}</div>}
     </section>
