@@ -45,7 +45,12 @@ export interface SessionSnapshot {
  * floor to each agent in DAG order, pauses for the human arbiter, and finally
  * produces a Zod-validated verdict.
  *
- *   created → investigating → debating → arbitrating → debating → synthesizing → complete
+ *   created → investigating → (debating ⇄ arbitrating)* → synthesizing → complete
+ *
+ * A session runs 1 to 4 debate rounds (`config.debateRounds`). When
+ * `requireArbitration` is on, the engine pauses after every round except the
+ * last: the arbiter may inject a directive, continue silently, or stop early —
+ * the verdict is then synthesized from whatever rounds were completed.
  *
  * Agents never talk to each other directly — every exchange goes through the
  * blackboard, which keeps the state machine stable and replayable.
@@ -102,18 +107,7 @@ export class CouncilEngine {
 
       await this.setPhase(sessionId, 'debating');
       await this.runDebateRound(sessionId, 1, session.config.agents);
-
-      if (session.config.requireArbitration) {
-        await this.setPhase(sessionId, 'arbitrating');
-        this.emit(sessionId, {
-          type: 'arbitration_request',
-          message: 'The council has paused and awaits the human arbiter.',
-        });
-        await this.log(sessionId, 'human', '🛑 Debate paused — awaiting human arbitration.');
-      } else {
-        await this.runDebateRound(sessionId, 2, session.config.agents);
-        await this.synthesize(sessionId);
-      }
+      await this.advanceAfterRound(sessionId, 1);
     } catch (error) {
       if (error instanceof ApiError) {
         // Domain errors (e.g. 409 double-start) bubble up to the caller
@@ -126,7 +120,7 @@ export class CouncilEngine {
     }
   }
 
-  /** Resume from the arbitration gate with a human directive (or a plain proceed). */
+  /** Resume from the arbitration gate: inject a directive, proceed, or stop early. */
   async arbitrate(sessionId: string, input: ArbitrateInput): Promise<void> {
     const session = await this.requireSession(sessionId);
     if (session.status !== 'arbitrating') {
@@ -142,13 +136,59 @@ export class CouncilEngine {
       };
       await this.appendArbitration(sessionId, arbitration);
       await this.log(sessionId, 'human', `👤 Directive: ${input.directive}`, input.targetAgent);
+    } else if (input.stop) {
+      await this.log(sessionId, 'human', '👤 The arbiter ended the debate early — the council delivers its verdict now.');
     } else {
       await this.log(sessionId, 'human', '👤 The arbiter proceeded without a directive.');
     }
 
+    if (input.stop) {
+      await this.synthesize(sessionId);
+      return;
+    }
+
+    const board = await this.deps.store.getBlackboard(sessionId);
+    const roundsCompleted = new Set(board?.positions.map((position) => position.round) ?? []).size;
+    const nextRound = roundsCompleted + 1;
+
     await this.setPhase(sessionId, 'debating');
-    await this.runDebateRound(sessionId, 2, session.config.agents);
-    await this.synthesize(sessionId);
+    await this.runDebateRound(sessionId, nextRound, session.config.agents);
+    await this.advanceAfterRound(sessionId, nextRound);
+  }
+
+  /**
+   * Decide what happens after a debate round completes: run the next round
+   * automatically, pause for the arbiter, or synthesize the verdict when the
+   * configured round count is reached (or exceeded, in case of an early stop).
+   */
+  private async advanceAfterRound(sessionId: string, completedRound: number): Promise<void> {
+    const session = await this.requireSession(sessionId);
+    const total = session.config.debateRounds;
+
+    if (completedRound >= total) {
+      await this.synthesize(sessionId);
+      return;
+    }
+
+    if (session.config.requireArbitration) {
+      await this.setPhase(sessionId, 'arbitrating');
+      this.emit(sessionId, {
+        type: 'arbitration_request',
+        round: completedRound,
+        totalRounds: total,
+        message: `Round ${completedRound} of ${total} complete — the council awaits the human arbiter.`,
+      });
+      await this.log(
+        sessionId,
+        'human',
+        `🛑 Debate paused after round ${completedRound}/${total} — awaiting human arbitration.`
+      );
+      return;
+    }
+
+    await this.setPhase(sessionId, 'debating');
+    await this.runDebateRound(sessionId, completedRound + 1, session.config.agents);
+    await this.advanceAfterRound(sessionId, completedRound + 1);
   }
 
   // -------------------------------------------------------------------------
@@ -275,6 +315,8 @@ export class CouncilEngine {
     console.error(`[engine] session ${sessionId} failed:`, error);
     try {
       await this.deps.store.updateSession(sessionId, { status: 'error', error: message });
+      // Let live clients flip to the error state immediately.
+      this.emit(sessionId, { type: 'phase', phase: 'error' });
       await this.log(sessionId, 'error', `❌ Session failed: ${message}`);
       this.emit(sessionId, { type: 'error', message });
     } catch (persistError) {

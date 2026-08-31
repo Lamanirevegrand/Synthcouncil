@@ -244,7 +244,13 @@ function createMockLlmClient(config: ResolvedLlmConfig): LlmClient {
       }
 
       if (anySchema === PositionOutputSchema) {
-        const agentLine = user.includes('TECH ARCHITECT') ? 'architecture' : user.includes('FINANCE') ? 'unit economics' : user.includes('RISK') ? 'compliance' : 'strategy';
+        const agentLine = user.includes('SYSTEMS ARCHITECT')
+          ? 'architecture'
+          : user.includes('FINANCIAL OFFICER')
+            ? 'unit economics'
+            : user.includes('COMPLIANCE')
+              ? 'compliance'
+              : 'strategy';
         return {
           stance: 'concerns',
           headline: `[mock] ${agentLine} raises structured concerns`,

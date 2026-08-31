@@ -161,6 +161,8 @@ export async function runDebatePosition(
   ].join('\n\n');
 
   const user = [
+    `YOU ARE THE ${agent.roleLabel.toUpperCase()}`,
+    '',
     `PROBLEM STATEMENT\n${ctx.topic}`,
     '',
     'ADDITIONAL CONTEXT',
