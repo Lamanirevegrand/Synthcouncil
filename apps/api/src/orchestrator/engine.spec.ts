@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import type { ZodTypeAny } from 'zod';
 import type { EvidenceProvider, FetchedPage, SearchResult } from '../evidence/types.js';
-import { createLlmClient, type ResolvedLlmConfig } from '../llm/client.js';
+import { createLlmClient, type JsonCompletionOptions, type LlmClient, type ResolvedLlmConfig } from '../llm/client.js';
 import { createMemoryStore } from '../storage/memory.js';
 import { ApiError } from '../utils/errors.js';
 import { CouncilEngine } from './engine.js';
@@ -122,6 +123,42 @@ describe('CouncilEngine (mock LLM + memory store)', () => {
     await expect(engine.start(session.id)).rejects.toBeInstanceOf(ApiError);
     await firstRun;
     await waitForStatus(engine, session.id, 'complete');
+  });
+
+  it('runs agents concurrently and never loses a blackboard write', async () => {
+    const store = createMemoryStore();
+    const llm = createLlmClient(MOCK_LLM);
+    // Add a measurable delay per LLM call so parallelism (vs sequential) is
+    // observable, while writes must still land exactly once.
+    const delayedLlm: LlmClient = {
+      provider: llm.provider,
+      model: llm.model,
+      async completeJson<T extends ZodTypeAny>(options: JsonCompletionOptions<T>) {
+        await sleep(150);
+        return llm.completeJson(options);
+      },
+    };
+    const engine = new CouncilEngine({ store, llm: delayedLlm, evidence: MOCK_EVIDENCE });
+    const session = await store.createSession({
+      topic: 'Concurrency smoke test for the council engine',
+      config: { agents: ['tech', 'finance', 'risk', 'strategy'], debateRounds: 2, requireArbitration: false },
+    });
+
+    const startTime = Date.now();
+    await engine.start(session.id);
+    await waitForStatus(engine, session.id, 'complete');
+    const elapsed = Date.now() - startTime;
+
+    const snapshot = await engine.snapshot(session.id);
+    // 4 agents × 3 mock claims = exactly 12 findings; 4 agents × 2 rounds = 8
+    // positions. Any lost update or duplicate write would break these counts.
+    expect(snapshot?.blackboard.findings).toHaveLength(12);
+    expect(snapshot?.blackboard.positions).toHaveLength(8);
+
+    // Sequential would take ≈ 4 agents × 2 calls × 150 ms (investigation) +
+    // 4 agents × 2 rounds × 150 ms (debate) + synthesis ≈ 2.55 s. Concurrent
+    // execution stays well under half of that.
+    expect(elapsed).toBeLessThan(1800);
   });
 
   it('runs all 4 configured rounds without an arbitration gate', async () => {

@@ -58,7 +58,30 @@ export interface SessionSnapshot {
 export class CouncilEngine {
   private readonly running = new Set<string>();
 
+  /**
+   * Per-session serialization of blackboard mutations. The heavy agent work
+   * (LLM calls + web searches) runs concurrently via Promise.all, but every
+   * read-modify-write on the shared blackboard goes through this queue, so two
+   * agents can never overwrite each other's findings/positions — no lost
+   * updates, no DB races, and SSE events stay ordered with the persisted state.
+   */
+  private readonly writeQueues = new Map<string, Promise<unknown>>();
+
   constructor(private readonly deps: EngineDeps) { }
+
+  private enqueueWrite<T>(sessionId: string, op: () => Promise<T>): Promise<T> {
+    const previous = this.writeQueues.get(sessionId) ?? Promise.resolve();
+    const run = previous.then(() => op());
+    // Keep the chain alive even if an individual write fails.
+    this.writeQueues.set(
+      sessionId,
+      run.then(
+        () => undefined,
+        () => undefined
+      )
+    );
+    return run;
+  }
 
   async snapshot(sessionId: string): Promise<SessionSnapshot | null> {
     const [session, blackboard] = await Promise.all([
@@ -85,7 +108,10 @@ export class CouncilEngine {
       await this.setPhase(sessionId, 'investigating');
       const agents = getAgents(session.config.agents);
 
-      for (const agent of agents) {
+      // All agents investigate concurrently — their LLM calls and web searches
+      // overlap instead of stacking. Only the blackboard writes are serialized,
+      // through the per-session write queue (see enqueueWrite).
+      const investigationTasks = agents.map(async (agent) => {
         await this.log(sessionId, 'agent', `🔎 ${agent.roleLabel} is investigating…`, agent.id);
         const { findings, queries, evidenceCount } = await runInvestigation(
           agent,
@@ -103,7 +129,8 @@ export class CouncilEngine {
           `📋 ${agent.label} published ${findings.length} finding(s) from ${queries.length} query(ies), ${evidenceCount} source(s).`,
           agent.id
         );
-      }
+      });
+      await Promise.all(investigationTasks);
 
       await this.setPhase(sessionId, 'debating');
       await this.runDebateRound(sessionId, 1, session.config.agents);
@@ -199,7 +226,9 @@ export class CouncilEngine {
     const { session, blackboard } = await this.requirePair(sessionId);
     const agents = getAgents(agentIds);
 
-    for (const agent of agents) {
+    // Agents write positions concurrently; every agent reacts to the SAME
+    // prior-round snapshot, and the write queue keeps the blackboard race-free.
+    const debateTasks = agents.map(async (agent) => {
       await this.log(sessionId, 'agent', `💬 ${agent.roleLabel} is debating (round ${round})…`, agent.id);
       const position = await runDebatePosition(agent, this.deps.llm, {
         topic: session.topic,
@@ -210,7 +239,8 @@ export class CouncilEngine {
         otherPositions: blackboard.positions.filter((position) => position.agentId !== agent.id),
       });
       await this.appendPosition(sessionId, position);
-    }
+    });
+    await Promise.all(debateTasks);
   }
 
   private async synthesize(sessionId: string): Promise<void> {
@@ -260,54 +290,64 @@ export class CouncilEngine {
     void session;
   }
 
-  private async appendFinding(sessionId: string, finding: Finding): Promise<void> {
-    const board = await this.deps.store.getBlackboard(sessionId);
-    const next = withFinding(board ?? emptyBlackboard(sessionId), finding);
-    await this.deps.store.saveBlackboard(sessionId, next);
-    this.emit(sessionId, { type: 'finding', finding });
+  private appendFinding(sessionId: string, finding: Finding): Promise<void> {
+    return this.enqueueWrite(sessionId, async () => {
+      const board = await this.deps.store.getBlackboard(sessionId);
+      const next = withFinding(board ?? emptyBlackboard(sessionId), finding);
+      await this.deps.store.saveBlackboard(sessionId, next);
+      this.emit(sessionId, { type: 'finding', finding });
+    });
   }
 
-  private async appendPosition(sessionId: string, position: Position): Promise<void> {
-    const board = await this.deps.store.getBlackboard(sessionId);
-    const next = withPosition(board ?? emptyBlackboard(sessionId), position);
-    await this.deps.store.saveBlackboard(sessionId, next);
-    this.emit(sessionId, { type: 'position', position });
+  private appendPosition(sessionId: string, position: Position): Promise<void> {
+    return this.enqueueWrite(sessionId, async () => {
+      const board = await this.deps.store.getBlackboard(sessionId);
+      const next = withPosition(board ?? emptyBlackboard(sessionId), position);
+      await this.deps.store.saveBlackboard(sessionId, next);
+      this.emit(sessionId, { type: 'position', position });
+    });
   }
 
-  private async appendArbitration(sessionId: string, arbitration: Arbitration): Promise<void> {
-    const board = await this.deps.store.getBlackboard(sessionId);
-    const next = withArbitration(board ?? emptyBlackboard(sessionId), arbitration);
-    await this.deps.store.saveBlackboard(sessionId, next);
-    this.emit(sessionId, { type: 'arbitration', arbitration });
+  private appendArbitration(sessionId: string, arbitration: Arbitration): Promise<void> {
+    return this.enqueueWrite(sessionId, async () => {
+      const board = await this.deps.store.getBlackboard(sessionId);
+      const next = withArbitration(board ?? emptyBlackboard(sessionId), arbitration);
+      await this.deps.store.saveBlackboard(sessionId, next);
+      this.emit(sessionId, { type: 'arbitration', arbitration });
+    });
   }
 
-  private async appendVerdict(sessionId: string, verdict: Verdict): Promise<void> {
-    const board = await this.deps.store.getBlackboard(sessionId);
-    const next = withVerdict(board ?? emptyBlackboard(sessionId), verdict);
-    await this.deps.store.saveBlackboard(sessionId, next);
-    this.emit(sessionId, { type: 'verdict', verdict });
+  private appendVerdict(sessionId: string, verdict: Verdict): Promise<void> {
+    return this.enqueueWrite(sessionId, async () => {
+      const board = await this.deps.store.getBlackboard(sessionId);
+      const next = withVerdict(board ?? emptyBlackboard(sessionId), verdict);
+      await this.deps.store.saveBlackboard(sessionId, next);
+      this.emit(sessionId, { type: 'verdict', verdict });
+    });
   }
 
-  private async log(
+  private log(
     sessionId: string,
     kind: LogKind,
     message: string,
     agentId?: Session['config']['agents'][number],
     emitLogEvent = true
   ): Promise<void> {
-    const board = await this.deps.store.getBlackboard(sessionId);
-    const entry = {
-      id: createId('log'),
-      at: nowIso(),
-      kind,
-      message,
-      ...(agentId ? { agentId } : {}),
-    };
-    const next = withLog(board ?? emptyBlackboard(sessionId), entry);
-    await this.deps.store.saveBlackboard(sessionId, next);
-    if (emitLogEvent) {
-      this.emit(sessionId, { type: 'log', entry });
-    }
+    return this.enqueueWrite(sessionId, async () => {
+      const board = await this.deps.store.getBlackboard(sessionId);
+      const entry = {
+        id: createId('log'),
+        at: nowIso(),
+        kind,
+        message,
+        ...(agentId ? { agentId } : {}),
+      };
+      const next = withLog(board ?? emptyBlackboard(sessionId), entry);
+      await this.deps.store.saveBlackboard(sessionId, next);
+      if (emitLogEvent) {
+        this.emit(sessionId, { type: 'log', entry });
+      }
+    });
   }
 
   private async fail(sessionId: string, error: unknown): Promise<void> {
