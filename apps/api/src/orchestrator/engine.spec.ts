@@ -123,4 +123,46 @@ describe('CouncilEngine (mock LLM + memory store)', () => {
     await firstRun;
     await waitForStatus(engine, session.id, 'complete');
   });
+
+  it('runs all 4 configured rounds without an arbitration gate', async () => {
+    const { store, engine } = makeEngine(false, 4);
+    const session = await store.createSession({
+      topic: 'Scale a note-taking SaaS to 100k meetings per month',
+      config: { agents: ['tech', 'finance'], debateRounds: 4, requireArbitration: false },
+    });
+
+    await engine.start(session.id);
+    await waitForStatus(engine, session.id, 'complete');
+
+    const snapshot = await engine.snapshot(session.id);
+    expect(snapshot?.blackboard.positions).toHaveLength(8); // 2 agents × 4 rounds
+    expect(new Set(snapshot?.blackboard.positions.map((position) => position.round))).toEqual(
+      new Set([1, 2, 3, 4])
+    );
+  });
+
+  it('pauses after every round and stops early when the arbiter asks', async () => {
+    const { store, engine } = makeEngine(true, 4);
+    const session = await store.createSession({
+      topic: 'Choose the transcription provider for an AI notes SaaS',
+      config: { agents: ['tech', 'finance', 'risk', 'strategy'], debateRounds: 4, requireArbitration: true },
+    });
+
+    const run = engine.start(session.id);
+    await waitForStatus(engine, session.id, 'arbitrating');
+    expect((await engine.snapshot(session.id))?.blackboard.positions).toHaveLength(4); // round 1
+
+    await engine.arbitrate(session.id, { proceed: true });
+    await waitForStatus(engine, session.id, 'arbitrating'); // gate after round 2
+    expect((await engine.snapshot(session.id))?.blackboard.positions).toHaveLength(8); // round 2
+
+    await engine.arbitrate(session.id, { stop: true });
+    await run;
+    await waitForStatus(engine, session.id, 'complete');
+
+    const snapshot = await engine.snapshot(session.id);
+    // Stopped after round 2 of 4: verdict delivered from 2 rounds only.
+    expect(snapshot?.blackboard.positions).toHaveLength(8);
+    expect(snapshot?.blackboard.verdict).not.toBeNull();
+  });
 });
