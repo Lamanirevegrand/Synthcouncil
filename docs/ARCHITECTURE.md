@@ -52,10 +52,13 @@ Zod contract):
 
 1. **investigating** — for each convened agent: (a) the agent designs its own search queries,
    (b) the evidence provider searches and fetches the best pages, (c) the agent writes
-   Zod-validated **findings** citing only the fetched pack.
+   Zod-validated **findings** citing only the fetched pack. Agents investigate **concurrently**
+   (`Promise.all`) so their LLM calls and web requests overlap; only the blackboard writes are
+   serialized through a per-session write queue, so no finding is ever lost to a race.
 2. **debating (round N)** — each agent publishes a **position**: stance, argument, explicit
-   *objections against other agents*, supporting finding ids, sources. With
-   `requireArbitration=false` the engine chains all configured rounds automatically.
+   *objections against other agents*, supporting finding ids, sources. All agents debate
+   concurrently against the same prior-round snapshot; writes stay race-free through the same
+   queue. With `requireArbitration=false` the engine chains all configured rounds automatically.
 3. **arbitrating** — after every round except the last, the engine pauses. SSE announces
    `arbitration_request` (with `round`/`totalRounds`). The human can inject a directive (optionally
    aimed at one agent), continue without one (`proceed`), or **stop now** (`stop`) — ending the
