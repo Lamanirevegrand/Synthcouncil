@@ -18,9 +18,9 @@ the debate literally pauses until you arbitrate.
   not incidental.
 - **Live evidence, not vibes** — agents design their own search queries, fetch pages, and write
   Zod-validated findings with real URLs. No invented citations survive the contracts.
-- **Human-in-the-loop** — round one pauses for your directive (e.g. *"Tech, verify transcription
-  pricing at our projected volume"*); round two runs with it in context, then the council delivers a
-  structured verdict: recommendations with owners, risks with severities, and every source.
+- **Human-in-the-loop** — after every debate round (1 to 4, your choice) the council pauses: inject
+  a directive (e.g. *"Tech, verify transcription pricing at our projected volume"*), continue
+  silently, or **stop now** and receive the verdict from the rounds completed so far.
 - **WebMCP native** — the web client registers `document.modelContext.registerTool`, so the
   browser's model itself can convene, run, read and arbitrate councils.
 - **Vendor-neutral LLM** — OpenAI-compatible chat completions against **OpenRouter** (Groq model

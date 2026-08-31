@@ -41,21 +41,26 @@ replayable, auditable debates (no chat chaos) and makes every intermediate state
 ### The DAG
 
 ```
-created → investigating → debating → arbitrating → debating → synthesizing → complete
-                                    │                                    │
-                                    ▼                                    ▼
-                            (human directive)                        (any step can fail → error)
+created → investigating → (debating ⇄ arbitrating)* → synthesizing → complete
+                                                          │
+                                                          ▼
+                                        (any step can fail → error)
 ```
+
+A session runs **1 to 4 debate rounds** (`config.debateRounds`, default 2; hard-capped at 4 by the
+Zod contract):
 
 1. **investigating** — for each convened agent: (a) the agent designs its own search queries,
    (b) the evidence provider searches and fetches the best pages, (c) the agent writes
    Zod-validated **findings** citing only the fetched pack.
-2. **debating (round 1)** — each agent publishes a **position**: stance, argument, explicit
-   *objections against other agents*, supporting finding ids, sources.
-3. **arbitrating** — hard pause. The engine waits; SSE announces `arbitration_request`. The human
-   injects a directive (optionally aimed at one agent) or proceeds.
-4. **debating (round 2)** — positions are written again with the directives in context.
-5. **synthesizing → complete** — the Strategy Chair merges everything into a **verdict**:
+2. **debating (round N)** — each agent publishes a **position**: stance, argument, explicit
+   *objections against other agents*, supporting finding ids, sources. With
+   `requireArbitration=false` the engine chains all configured rounds automatically.
+3. **arbitrating** — after every round except the last, the engine pauses. SSE announces
+   `arbitration_request` (with `round`/`totalRounds`). The human can inject a directive (optionally
+   aimed at one agent), continue without one (`proceed`), or **stop now** (`stop`) — ending the
+   debate at any round and moving straight to the verdict.
+4. **synthesizing → complete** — the Strategy Chair merges everything into a **verdict**:
    summary, recommendations (each with an owner), risks (with severity), sources, confidence.
 
 ## 3. LLM provider abstraction (`apps/api/src/llm`)
