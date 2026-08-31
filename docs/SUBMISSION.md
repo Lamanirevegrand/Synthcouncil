@@ -30,7 +30,9 @@ entire value is *falsifiable, sourced reasoning about the current world*.
 - **You don't read, you arbitrate.** Instead of a wall of chat, the UI shows a structured
   blackboard: findings with citations, debate positions with explicit objections, and a *hard
   pause* where the product asks for your judgment — e.g. *"Tech, verify transcription pricing at
-  our projected volume."* Round two then runs with your instruction in context.
+  our projected volume."* Round two then runs with your instruction in context. You decide when the
+  debate is done: end it early at any round and the council synthesizes the verdict from the rounds
+  already completed (up to 4).
 - **Live progress, not waiting.** Server-Sent Events stream every phase, finding and objection onto
   the page in real time; you watch the council work.
 - **Trust through provenance.** Every claim links its source; the verdict lists every consulted URL
