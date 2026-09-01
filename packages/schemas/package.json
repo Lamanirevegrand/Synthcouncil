@@ -2,6 +2,7 @@
   "name": "@synthcouncil/schemas",
   "version": "1.0.0",
   "private": true,
+  "license": "GPL-3.0-only",
   "type": "module",
   "description": "Shared Zod contracts for the SynthCouncil blackboard, agents, events and API inputs.",
   "exports": {

@@ -2,6 +2,7 @@
   "name": "@synthcouncil/api",
   "version": "1.0.0",
   "private": true,
+  "license": "GPL-3.0-only",
   "type": "module",
   "description": "SynthCouncil engine — Express + TypeScript orchestration API with blackboard/DAG debate and WebMCP evidence.",
   "scripts": {

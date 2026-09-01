@@ -143,4 +143,5 @@ pnpm -r build                              # contracts + API bundle + static web
 
 ## 📄 License
 
-GNU GPLv3 — visible in the repository's About section as required by the hackathon rules.
+SynthCouncil is licensed under the GNU General Public License v3.0 (GPL-3.0-only).
+See [LICENSE](./LICENSE) for details.

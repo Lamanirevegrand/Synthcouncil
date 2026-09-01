@@ -23,7 +23,7 @@
     "blackboard",
     "hackathon"
   ],
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "concurrently": "^9.1.0"
   },
