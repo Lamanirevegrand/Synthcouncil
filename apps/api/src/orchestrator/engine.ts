@@ -14,7 +14,7 @@ import { getAgents } from '../agents/registry.js';
 import { runDebatePosition, runInvestigation } from '../agents/runner.js';
 import type { EvidenceProvider } from '../evidence/types.js';
 import type { LlmClient } from '../llm/client.js';
-import { normalizeSource } from '../llm/json.js';
+import { collectAllowlist, restrictSourcesToAllowlist } from '../llm/json.js';
 import type { CouncilStore } from '../storage/types.js';
 import { ApiError } from '../utils/errors.js';
 import { createId, nowIso } from '../utils/ids.js';
@@ -250,9 +250,18 @@ export class CouncilEngine {
     const { session, blackboard } = await this.requirePair(sessionId);
     const chair = getAgents(['strategy'])[0];
 
+    // The verdict may only cite sources already on the blackboard (findings or
+    // positions). The model gets the explicit list, and the output is filtered
+    // against it below — invented URLs or titles can never survive.
+    const allowlist = collectAllowlist([
+      ...blackboard.findings.flatMap((finding) => finding.sources),
+      ...blackboard.positions.flatMap((position) => position.sources),
+    ]);
+    const allowedSources = [...allowlist.values()].map((source) => ({ url: source.url, title: source.title }));
+
     const output = await this.deps.llm.completeJson({
       system: buildSynthesisSystem(chair),
-      user: buildSynthesisUser(session, blackboard),
+      user: buildSynthesisUser(session, blackboard, allowedSources),
       schema: VerdictOutputSchema,
       temperature: 0.4,
     });
@@ -261,10 +270,7 @@ export class CouncilEngine {
       summary: output.summary,
       recommendations: output.recommendations,
       risks: output.risks,
-      sources: output.sources
-        .map((source) => normalizeSource(source))
-        .filter((source): source is { url: string; title: string; snippet?: string } => source !== null)
-        .map((source) => ({ url: source.url, title: source.title, ...(source.snippet ? { snippet: source.snippet } : {}) })),
+      sources: restrictSourcesToAllowlist(output.sources, allowlist),
       confidence: output.confidence,
     };
 

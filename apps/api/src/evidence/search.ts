@@ -109,7 +109,7 @@ export function mockSearch(query: string): SearchResult[] {
   return [
     {
       title: 'Official API documentation (mock)',
-      url: 'https://docs.example.com/api-guide',
+      url: 'https://docs.example.com/guide',
       snippet: `[mock] Reference documentation relevant to "${query}".`,
     },
     {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { jsonFromText, normalizeSource } from './json.js';
+import { collectAllowlist, jsonFromText, normalizeSource, restrictSourcesToAllowlist } from './json.js';
 
 describe('jsonFromText', () => {
   it('parses a bare JSON object', () => {
@@ -47,5 +47,40 @@ describe('normalizeSource', () => {
   it('drops malformed entries', () => {
     expect(normalizeSource({ url: '', title: 'x' })).toBeNull();
     expect(normalizeSource(null)).toBeNull();
+  });
+});
+
+describe('restrictSourcesToAllowlist (anti-invention guard)', () => {
+  const allowlist = collectAllowlist([
+    { url: 'https://docs.example.com/guide', title: 'Official API documentation' },
+    { url: 'https://docs.example.com/pricing', title: 'Pricing and platform limits' },
+  ]);
+
+  it('strips invented URLs that are not in the allowlist', () => {
+    const result = restrictSourcesToAllowlist(
+      [
+        { url: 'https://www.example.com/finance-analysis', title: 'Finance Analysis' },
+        { url: 'https://docs.example.com/guide', title: 'Guide' },
+      ],
+      allowlist
+    );
+    expect(result.map((source) => source.url)).toEqual(['https://docs.example.com/guide']);
+  });
+
+  it('rewrites titles from the trusted record (no invented titles)', () => {
+    const result = restrictSourcesToAllowlist(
+      [{ url: 'https://docs.example.com/pricing', title: 'Totally Made Up Title' }],
+      allowlist
+    );
+    expect(result).toEqual([{ url: 'https://docs.example.com/pricing', title: 'Pricing and platform limits' }]);
+  });
+
+  it('matches bare domains after normalization', () => {
+    const result = restrictSourcesToAllowlist([{ url: 'docs.example.com/guide', title: 'Guide' }], allowlist);
+    expect(result.map((source) => source.url)).toEqual(['https://docs.example.com/guide']);
+  });
+
+  it('returns an empty array when nothing is allowed', () => {
+    expect(restrictSourcesToAllowlist([{ url: 'https://other.example.org/x', title: 'X' }], allowlist)).toEqual([]);
   });
 });

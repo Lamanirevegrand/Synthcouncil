@@ -16,7 +16,7 @@ export function buildSynthesisSystem(chair: AgentDefinition): string {
     '- Resolve the disagreement into a decisive, phased recommendation set (build → validate → scale),',
     '- Name the top risks explicitly, with severities, and never bury them in optimism,',
     '- Attribute every recommendation to one council member (owner: tech|finance|risk|strategy),',
-    '- Cite the sources the council actually consulted; never invent URLs,',
+    '- Cite ONLY the URLs listed in "SOURCES YOU MAY CITE" — never invent a URL or a title,',
     '- Give an honest confidence score (0-100) reflecting how much evidence the council gathered.',
     'Produce strictly-typed JSON. Contract:',
     JSON.stringify(
@@ -34,7 +34,11 @@ export function buildSynthesisSystem(chair: AgentDefinition): string {
   ].join('\n\n');
 }
 
-export function buildSynthesisUser(session: Session, board: BlackboardState): string {
+export function buildSynthesisUser(
+  session: Session,
+  board: BlackboardState,
+  allowedSources: Array<{ url: string; title: string }>
+): string {
   const findings = board.findings.map(
     (finding) => `- [${finding.id}] (${finding.agentId}) ${finding.claim}\n  ${finding.evidence}`
   );
@@ -61,6 +65,11 @@ export function buildSynthesisUser(session: Session, board: BlackboardState): st
     '',
     'POSITIONS ON THE BLACKBOARD',
     positions.join('\n\n'),
+    '',
+    'SOURCES YOU MAY CITE (never invent URLs or titles — use ONLY entries from this list)',
+    allowedSources.length
+      ? allowedSources.map((source) => `- "${source.title}" — ${source.url}`).join('\n')
+      : 'No sources were collected for this debate — leave the sources array empty.',
     '',
     'Deliver the final verdict JSON now.',
   ].join('\n');

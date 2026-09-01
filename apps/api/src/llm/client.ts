@@ -224,19 +224,19 @@ function createMockLlmClient(config: ResolvedLlmConfig): LlmClient {
               claim: `A stateless, webhook-driven pipeline with asynchronous jobs is the recommended architecture for "${topic}".`,
               evidence:
                 '[mock] Official docs recommend webhook callbacks with idempotent retries and no long-lived connections — a good fit for batch jobs like transcription. Synthetic source supports this pattern.',
-              sources: [{ url: 'https://docs.example.com/webhook-architecture', title: 'Webhook architecture (example)' }],
+              sources: [{ url: 'https://docs.example.com/guide', title: 'Official API documentation (mock)' }],
             },
             {
               claim: `Per-unit API fees dominate the cost base of a freemium product for "${topic}".`,
               evidence:
                 '[mock] Aggregating volume and capping the free tier keeps unit economics viable; figures are illustrative.',
-              sources: [{ url: 'https://docs.example.com/api-pricing', title: 'API pricing comparison (example)' }],
+              sources: [{ url: 'https://docs.example.com/pricing', title: 'Pricing and platform limits (mock)' }],
             },
             {
               claim: `EU data residency and GDPR obligations shape the product from day one for "${topic}".`,
               evidence:
                 '[mock] Audio and transcripts are personal data; EU-hosted processing with deletion APIs is the baseline posture.',
-              sources: [{ url: 'https://docs.example.com/gdpr-processing', title: 'GDPR and AI processing (example)' }],
+              sources: [{ url: 'https://docs.example.com/regulatory', title: 'Regulatory briefing (mock)' }],
             },
           ],
           openQuestions: ['Which transcription provider offers the best price/accuracy trade-off?', 'What does enterprise GDPR compliance require for audio storage?'],
@@ -260,7 +260,7 @@ function createMockLlmClient(config: ResolvedLlmConfig): LlmClient {
             { against: 'finance', point: 'Publish the real per-unit cost curve — hidden API fees break the freemium model.' },
           ],
           supportingFindingIds: [],
-          sources: [{ url: 'https://docs.example.com/verdict', title: 'Council evidence log (example)' }],
+          sources: [{ url: 'https://docs.example.com/guide', title: 'Official API documentation (mock)' }],
         };
       }
 
@@ -277,8 +277,8 @@ function createMockLlmClient(config: ResolvedLlmConfig): LlmClient {
             { title: 'Mis-transcription liability', detail: 'AI summaries presented as fact create liability; label AI-generated output and keep human review flows.', severity: 'medium' },
           ],
           sources: [
-            { url: 'https://docs.example.com/verdict', title: 'Council evidence log (example)' },
-            { url: 'https://docs.example.com/gdpr-processing', title: 'GDPR and AI processing (example)' },
+            { url: 'https://docs.example.com/guide', title: 'Official API documentation (mock)' },
+            { url: 'https://docs.example.com/pricing', title: 'Pricing and platform limits (mock)' },
           ],
           confidence: 64,
         };

@@ -79,6 +79,22 @@ describe('CouncilEngine (mock LLM + memory store)', () => {
     expect(snapshot?.blackboard.verdict).not.toBeNull();
     expect(snapshot?.blackboard.verdict?.recommendations.length).toBeGreaterThan(0);
     expect(snapshot?.blackboard.verdict?.sources.length).toBeGreaterThan(0);
+
+    // Anti-invention guarantee: every source anywhere on the blackboard must be
+    // one the mock evidence pack actually returned — never an invented URL.
+    const collected = new Set(['https://docs.example.com/guide', 'https://docs.example.com/pricing']);
+    for (const finding of snapshot?.blackboard.findings ?? []) {
+      for (const source of finding.sources) {
+        expect(collected.has(source.url)).toBe(true);
+      }
+    }
+    const blackboardUrls = new Set([
+      ...(snapshot?.blackboard.findings.flatMap((finding) => finding.sources).map((source) => source.url) ?? []),
+      ...(snapshot?.blackboard.positions.flatMap((position) => position.sources).map((source) => source.url) ?? []),
+    ]);
+    for (const source of snapshot?.blackboard.verdict?.sources ?? []) {
+      expect(blackboardUrls.has(source.url)).toBe(true);
+    }
   });
 
   it('pauses for the human arbiter and resumes to a verdict', async () => {

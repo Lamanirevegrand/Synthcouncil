@@ -87,3 +87,54 @@ export function normalizeSource(raw: unknown): { url: string; title: string; sni
   const snippet = typeof rec.snippet === 'string' && rec.snippet.trim() ? rec.snippet.trim() : undefined;
   return { url, title, snippet };
 }
+
+/**
+ * A trusted source record — one the engine actually collected (search result
+ * or fetched page), with its real title.
+ */
+export interface KnownSource {
+  url: string;
+  title: string;
+  snippet?: string;
+}
+
+/**
+ * Hard anti-hallucination guard. Model outputs may only cite URLs the engine
+ * actually collected: anything else — invented URLs, typos, bare domains that
+ * normalize differently — is stripped. Titles are also rewritten from the
+ * trusted record, so a model cannot pair a real URL with an invented title.
+ */
+export function restrictSourcesToAllowlist(
+  sources: unknown[],
+  allowlist: ReadonlyMap<string, KnownSource>
+): Array<{ url: string; title: string; snippet?: string }> {
+  const kept: Array<{ url: string; title: string; snippet?: string }> = [];
+  for (const raw of sources) {
+    const normalized = normalizeSource(raw);
+    if (!normalized) continue;
+    const known = allowlist.get(normalized.url);
+    if (!known) continue;
+    kept.push({
+      url: known.url,
+      title: known.title,
+      ...(known.snippet ? { snippet: known.snippet } : {}),
+    });
+  }
+  return kept;
+}
+
+/**
+ * Build a source allowlist (url → trusted record) from a flat list of known
+ * sources, keeping the first-seen title.
+ */
+export function collectAllowlist(
+  sources: Array<{ url: string; title: string; snippet?: string }>
+): Map<string, KnownSource> {
+  const allowlist = new Map<string, KnownSource>();
+  for (const source of sources) {
+    const normalized = normalizeSource(source);
+    if (!normalized || allowlist.has(normalized.url)) continue;
+    allowlist.set(normalized.url, normalized);
+  }
+  return allowlist;
+}

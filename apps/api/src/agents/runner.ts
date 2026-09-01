@@ -2,7 +2,6 @@ import type {
   Arbitration,
   Finding,
   Position,
-  Source,
 } from '@synthcouncil/schemas';
 import {
   InvestigationOutputSchema,
@@ -12,7 +11,7 @@ import {
 } from '@synthcouncil/schemas';
 import type { EvidenceProvider } from '../evidence/types.js';
 import type { LlmClient } from '../llm/client.js';
-import { normalizeSource } from '../llm/json.js';
+import { normalizeSource, restrictSourcesToAllowlist, type KnownSource } from '../llm/json.js';
 import { createId, nowIso } from '../utils/ids.js';
 import type { AgentDefinition } from './types.js';
 
@@ -62,6 +61,10 @@ export async function runInvestigation(
   const pack = await collectEvidencePack(evidence, queries);
   const packText = renderEvidencePack(pack);
 
+  // Hard allowlist: a claim may only cite URLs the engine actually collected
+  // (search results + fetched pages). Anything else is stripped below.
+  const allowlist = collectPackAllowlist(pack);
+
   const system = [
     agent.persona,
     agent.investigationRules,
@@ -105,7 +108,7 @@ export async function runInvestigation(
     agentId: agent.id,
     claim: claim.claim,
     evidence: claim.evidence,
-    sources: sanitizeSources(claim.sources),
+    sources: restrictSourcesToAllowlist(claim.sources, allowlist),
     createdAt: nowIso(),
   }));
 
@@ -140,6 +143,10 @@ export async function runDebatePosition(
       ? ctx.arbitrations.map((arbitration) => `- ${arbitration.directive}${arbitration.targetAgent ? ` (directed at ${arbitration.targetAgent})` : ''}`).join('\n')
       : 'None yet — the council is still autonomous.';
 
+  // Hard allowlist: a position may only cite sources already on the blackboard
+  // (the agent's own findings or other agents' published positions).
+  const allowlist = collectDebateAllowlist(ctx);
+
   const system = [
     agent.persona,
     agent.debateRules,
@@ -156,7 +163,7 @@ export async function runDebatePosition(
       null,
       2
     ),
-    'Rules: be adversarial but factual; cite only sources you already used; explicitly attack weak points in other positions; never manufacture consensus.',
+    'Rules: be adversarial but factual; cite ONLY URLs from YOUR FINDINGS or other agents\' positions; explicitly attack weak points in other positions; never manufacture consensus.',
     'Respond with ONLY a valid JSON object.',
   ].join('\n\n');
 
@@ -181,6 +188,10 @@ export async function runDebatePosition(
 
   const output = await llm.completeJson({ system, user, schema: PositionOutputSchema, temperature: 0.6 });
 
+  // Only reference findings that actually exist in this agent's findings —
+  // a model cannot point at a finding id that was never published.
+  const ownFindingIds = new Set(ctx.ownFindings.map((finding) => finding.id));
+
   return {
     id: createId(`${agent.id}-position`),
     agentId: agent.id,
@@ -189,8 +200,8 @@ export async function runDebatePosition(
     headline: output.headline,
     argument: output.argument,
     objections: output.objections,
-    supportingFindingIds: output.supportingFindingIds,
-    sources: sanitizeSources(output.sources),
+    supportingFindingIds: output.supportingFindingIds.filter((id) => ownFindingIds.has(id)),
+    sources: restrictSourcesToAllowlist(output.sources, allowlist),
     createdAt: nowIso(),
   };
 }
@@ -242,6 +253,40 @@ async function collectEvidencePack(evidence: EvidenceProvider, queries: string[]
   return pack;
 }
 
+function collectPackAllowlist(pack: CollectedPackItem[]): Map<string, KnownSource> {
+  const allowlist = new Map<string, KnownSource>();
+  for (const item of pack) {
+    for (const result of item.results) {
+      const known = normalizeSource({ url: result.url, title: result.title, snippet: result.snippet });
+      if (known && !allowlist.has(known.url)) allowlist.set(known.url, known);
+    }
+    // Fetched pages may end at a redirected URL — both the search-result URL
+    // and the final page URL are legitimate citations.
+    for (const page of item.pages) {
+      const known = normalizeSource({ url: page.url, title: page.title });
+      if (known && !allowlist.has(known.url)) allowlist.set(known.url, known);
+    }
+  }
+  return allowlist;
+}
+
+function collectDebateAllowlist(ctx: DebateContext): Map<string, KnownSource> {
+  const allowlist = new Map<string, KnownSource>();
+  for (const finding of ctx.ownFindings) {
+    for (const source of finding.sources) {
+      const known = normalizeSource(source);
+      if (known && !allowlist.has(known.url)) allowlist.set(known.url, known);
+    }
+  }
+  for (const position of ctx.otherPositions) {
+    for (const source of position.sources) {
+      const known = normalizeSource(source);
+      if (known && !allowlist.has(known.url)) allowlist.set(known.url, known);
+    }
+  }
+  return allowlist;
+}
+
 function renderEvidencePack(pack: CollectedPackItem[]): string {
   if (pack.length === 0) return '';
   const blocks: string[] = [];
@@ -276,11 +321,4 @@ function renderOtherPositions(ctx: DebateContext): string {
           : '')
     )
     .join('\n\n');
-}
-
-function sanitizeSources(sources: Source[]): Source[] {
-  return sources
-    .map((source) => normalizeSource(source))
-    .filter((source): source is { url: string; title: string; snippet?: string } => source !== null)
-    .map((source) => ({ url: source.url, title: source.title, ...(source.snippet ? { snippet: source.snippet } : {}) }));
 }
