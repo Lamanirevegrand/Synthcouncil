@@ -48,11 +48,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, p {
+h1,
+h2,
+h3,
+h4,
+p {
   margin: 0;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   line-height: 1.2;
 }
 
@@ -91,7 +98,8 @@ a:hover {
   text-decoration: underline;
 }
 
-code, pre {
+code,
+pre {
   font-family: ui-monospace, 'Cascadia Code', Consolas, 'Courier New', monospace;
   font-size: 0.85em;
 }
@@ -158,14 +166,11 @@ pre {
 }
 
 .brand-mark {
-  display: inline-grid;
-  place-items: center;
   width: 28px;
   height: 28px;
   border-radius: 9px;
-  background: linear-gradient(180deg, #f2c96b, #d9a63a);
-  color: #201705;
-  font-size: 15px;
+  object-fit: contain;
+  /* Empêche ton image de s'écraser */
 }
 
 .site-nav {
@@ -347,7 +352,7 @@ pre {
   margin-bottom: 1.05rem;
 }
 
-.field > span {
+.field>span {
   font-size: 0.78rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -355,7 +360,8 @@ pre {
   color: var(--muted);
 }
 
-textarea, select {
+textarea,
+select {
   background: var(--card-soft);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -367,7 +373,8 @@ textarea, select {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-textarea:focus, select:focus {
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
@@ -1097,7 +1104,10 @@ textarea::placeholder {
 /* --- Motion ------------------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: no-preference) {
-  .card, .strip-item, .hero {
+
+  .card,
+  .strip-item,
+  .hero {
     animation: rise 0.45s ease both;
   }
 
@@ -1111,6 +1121,7 @@ textarea::placeholder {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: none;

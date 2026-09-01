@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 724 719">
+  <circle cx="115" cy="113" r="99" fill="#FFFFFF" stroke="#DFB97A" stroke-width="29"/>
+  <circle cx="115" cy="113" r="41" fill="#FBF4D8"/>
+
+  <circle cx="610" cy="113" r="99" fill="#FFFFFF" stroke="#DFB97A" stroke-width="29"/>
+  <circle cx="610" cy="113" r="41" fill="#FBF4D8"/>
+
+  <circle cx="115" cy="606" r="99" fill="#FFFFFF" stroke="#DFB97A" stroke-width="29"/>
+  <circle cx="115" cy="606" r="41" fill="#FBF4D8"/>
+
+  <circle cx="610" cy="606" r="99" fill="#FFFFFF" stroke="#DFB97A" stroke-width="29"/>
+  <circle cx="610" cy="606" r="41" fill="#FBF4D8"/>
+
+  <line x1="177" y1="175" x2="274" y2="270"
+        stroke="#DFB97A" stroke-width="29"/>
+
+  <line x1="547" y1="175" x2="450" y2="270"
+        stroke="#DFB97A" stroke-width="29"/>
+
+  <line x1="177" y1="544" x2="274" y2="449"
+        stroke="#DFB97A" stroke-width="29"/>
+
+  <line x1="547" y1="544" x2="450" y2="449"
+        stroke="#DFB97A" stroke-width="29"/>
+
+  <circle cx="362" cy="359" r="156"
+          fill="#FFFFFF"
+          stroke="#DFB97A"
+          stroke-width="30"/>
+
+  <circle cx="362" cy="359" r="97"
+          fill="#FBF4D8"/>
+</svg>
