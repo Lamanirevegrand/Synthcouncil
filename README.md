@@ -143,4 +143,4 @@ pnpm -r build                              # contracts + API bundle + static web
 
 ## 📄 License
 
-[MIT](LICENSE) — visible in the repository's About section as required by the hackathon rules.
+GNU GPLv3 — visible in the repository's About section as required by the hackathon rules.
