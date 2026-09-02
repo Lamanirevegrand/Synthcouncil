@@ -1,147 +1,701 @@
 # ⚖️ SynthCouncil — The Council of Agents
 
-> An adversarial committee of AI experts — **Tech, Finance, Risk, Strategy** — that debates your
-> hardest problem using **live, cited web evidence** (WebMCP), under the supervision of a human
-> arbiter. Built for the [OpenAI WebMCP Hackathon](https://openai.devpost.com).
+> **What if an AI could challenge itself before giving you an answer?**
 
-A single AI tends to agree with you. SynthCouncil **forces disagreement**: each agent is an
-isolated persona with a single responsibility, every claim must be backed by a fetched web source,
-and the architecture makes the models attack each other's positions. The human holds the gavel —
-the debate literally pauses until you arbitrate.
+SynthCouncil is an adversarial AI council for difficult decisions. Instead of asking a single model for an answer, it convenes several isolated expert agents — **Tech, Finance, Risk, and Strategy** — who independently investigate a problem, gather live web evidence, challenge opposing positions, and build a shared verdict.
+
+A **human arbiter remains in control**: after each debate round, the council pauses so the user can inject a directive, continue, or stop and accept the verdict reached so far.
+
+Built for the **OpenAI WebMCP Hackathon**.
 
 ---
 
-## ✨ Highlights
+## 🎯 The problem
 
-- **Adversarial AI by construction** — agents never talk directly; they read/write a shared
-  *blackboard* and the orchestrator distributes the floor (DAG), so disagreement is structural,
-  not incidental.
-- **Live evidence, not vibes** — agents design their own search queries, fetch pages, and write
-  Zod-validated findings with real URLs. No invented citations survive the contracts.
-- **Human-in-the-loop** — after every debate round (1 to 4, your choice) the council pauses: inject
-  a directive (e.g. *"Tech, verify transcription pricing at our projected volume"*), continue
-  silently, or **stop now** and receive the verdict from the rounds completed so far.
-- **WebMCP native** — the web client registers `document.modelContext.registerTool`, so the
-  browser's model itself can convene, run, read and arbitrate councils.
-- **Vendor-neutral LLM** — OpenAI-compatible chat completions against **OpenRouter** (Groq model
-  by default; Claude/GPT/anything via one env var), direct **Groq**, any custom endpoint, or a
-  deterministic offline **mock** for demos and tests.
-- **Surgical Zod contracts** shared across the workspace — a hallucinated JSON shape can never
-  crash the debate; it gets rejected and the model retries with the validation error.
+For complex decisions, a single AI assistant can be too agreeable.
 
-## 🏗️ Repository layout
+It may:
 
+* accept the assumptions contained in the question;
+* converge too quickly on one answer;
+* overlook important risks;
+* provide plausible but weakly supported claims;
+* hide uncertainty behind a confident response.
+
+SynthCouncil takes a different approach:
+
+> **Don't ask one AI to be right. Make several AIs disagree, investigate, and defend their positions.**
+
+The goal is not to create more AI-generated text.
+The goal is to create a **structured decision process**.
+
+---
+
+## 🧠 How SynthCouncil works
+
+A user starts with a difficult question or decision.
+
+For example:
+
+> *"Should we launch an AI meeting-notes SaaS with a freemium model and EU data residency?"*
+
+The council then follows a controlled workflow:
+
+```text
+                    USER
+                     │
+                     ▼
+              ┌─────────────┐
+              │   CONVENE   │
+              │   COUNCIL   │
+              └──────┬──────┘
+                     │
+          ┌──────────┼──────────┐
+          ▼          ▼          ▼
+       TECH       FINANCE      RISK      STRATEGY
+          │          │          │          │
+          └──────────┼──────────┼──────────┘
+                     │
+                     ▼
+              LIVE WEB EVIDENCE
+                     │
+                     ▼
+              SHARED BLACKBOARD
+                     │
+                     ▼
+               DEBATE ROUND
+                     │
+                     ▼
+             HUMAN ARBITRATION
+                /     |      \
+          DIRECTIVE  CONTINUE  STOP
+                \     |      /
+                     ▼
+              NEXT DEBATE ROUND
+                     │
+                     ▼
+                  VERDICT
 ```
+
+Every expert has a **single responsibility** and works independently.
+
+Agents do not simply chat with each other. They read and write to a shared blackboard, while the orchestrator controls who acts and when.
+
+This makes disagreement **structural rather than accidental**.
+
+---
+
+## ✨ Why SynthCouncil is different
+
+### ⚔️ Adversarial by construction
+
+The experts are isolated personas with different responsibilities.
+
+They do not directly converse with one another. Instead, they:
+
+1. investigate independently;
+2. publish findings to the shared blackboard;
+3. inspect other positions;
+4. challenge weaknesses;
+5. refine their own position.
+
+The orchestrator controls the debate as a directed workflow (DAG).
+
+---
+
+### 🌐 Live evidence instead of "AI vibes"
+
+Experts do not rely only on their pretrained knowledge.
+
+They can:
+
+* formulate their own search queries;
+* retrieve current web sources;
+* inspect pages;
+* extract relevant evidence;
+* attach URLs to their findings.
+
+Evidence is validated through shared **Zod contracts**, so malformed or hallucinated structures are rejected and retried.
+
+The objective is not to guarantee that every source is correct, but to make the council's reasoning **traceable and inspectable**.
+
+---
+
+### 👤 Human-in-the-loop
+
+The council does not silently make the final decision.
+
+After every debate round, the process pauses.
+
+The human can:
+
+* **inject a directive**;
+* ask an expert to verify something;
+* **continue** the investigation;
+* or **stop** and receive the verdict from the completed rounds.
+
+For example:
+
+> *"Tech, verify transcription pricing at our projected volume."*
+
+The council incorporates the directive and continues from the resulting state.
+
+The human therefore remains the **arbiter**, not merely a spectator.
+
+---
+
+# 🌐 Why WebMCP matters
+
+WebMCP is not just an additional API in SynthCouncil.
+
+It provides a second interaction layer for the same decision-making system.
+
+A human can use SynthCouncil directly through its interface.
+
+A compatible browser agent can instead discover the site's capabilities and operate the council through structured WebMCP tools.
+
+### Without WebMCP
+
+An agent would have to interact with SynthCouncil like a human:
+
+```text
+Understand the UI
+      ↓
+Find the right control
+      ↓
+Fill the form
+      ↓
+Click a button
+      ↓
+Wait for the state to change
+      ↓
+Read the interface
+      ↓
+Repeat
+```
+
+### With WebMCP
+
+The capabilities of the application become directly available to the agent:
+
+```text
+User's problem
+      ↓
+Browser agent
+      ↓
+council_create
+      ↓
+council_start
+      ↓
+council_status
+      ↓
+Human directive
+      ↓
+council_direct
+      ↓
+Verdict
+```
+
+This creates a cooperative workflow:
+
+> **The human provides the problem and retains authority.
+> The agent orchestrates the council.
+> SynthCouncil provides the decision-making environment.**
+
+---
+
+## 🧩 The four WebMCP tools
+
+SynthCouncil registers four tools through:
+
+```ts
+document.modelContext.registerTool(...)
+```
+
+implemented in:
+
+```text
+apps/web/src/lib/webmcp.ts
+```
+
+| Tool             | Purpose                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| `council_create` | Create a council with a topic, selected experts, number of rounds, and arbitration settings |
+| `council_start`  | Start the council's investigation                                                           |
+| `council_status` | Read the current blackboard, findings, positions, debate state, and verdict                 |
+| `council_direct` | Act as the human arbiter by injecting a directive, continuing, or stopping the council      |
+
+These tools expose the **same core capabilities available through the human interface**.
+
+WebMCP therefore does not create a separate "agent version" of SynthCouncil.
+
+It makes the existing application **agent-accessible**.
+
+---
+
+## 🧪 WebMCP testing
+
+The project can be tested in WebMCP-capable environments.
+
+### ChatGPT Desktop
+
+The SynthCouncil page registers its four tools with the browser's model context.
+
+When Site Tools/WebMCP execution is available in the ChatGPT Desktop built-in browser, an agent can discover and invoke the tools directly from the page.
+
+### Chrome
+
+For experimental WebMCP testing:
+
+**Chrome 149+**
+
+Enable:
+
+```text
+chrome://flags/#enable-webmcp-testing
+```
+
+Then open the deployed SynthCouncil application.
+
+The important point is that **SynthCouncil itself does not depend on ChatGPT**.
+
+WebMCP is implemented at the web-client level through:
+
+```ts
+document.modelContext.registerTool
+```
+
+The LLM backend is completely independent from this browser-agent layer.
+
+---
+
+## 🎥 Demo
+
+The demo video focuses on the **human-facing SynthCouncil experience**: convening the council, watching experts investigate and debate, reviewing evidence, and exercising human arbitration.
+
+The WebMCP layer exposes these same capabilities to compatible browser agents.
+
+This separation is intentional:
+
+* **the UI demonstrates the product and human workflow;**
+* **WebMCP demonstrates agent interoperability with that workflow.**
+
+---
+
+## 🏗️ Architecture
+
+```text
+┌──────────────────────────────────────────────────────────┐
+│                     USER / AGENT                         │
+│                                                          │
+│        Human UI                  WebMCP Agent             │
+│           │                           │                   │
+└───────────┼───────────────────────────┼───────────────────┘
+            │                           │
+            ▼                           ▼
+┌──────────────────────────────────────────────────────────┐
+│                  ASTRO + REACT WEB CLIENT                 │
+│                                                          │
+│  Council Board │ Arbitration │ WebMCP │ Session Pages    │
+│                                                          │
+│                 document.modelContext                    │
+│                     .registerTool()                      │
+└──────────────────────────┬───────────────────────────────┘
+                           │ REST + SSE
+                           ▼
+┌──────────────────────────────────────────────────────────┐
+│                EXPRESS + TYPESCRIPT ENGINE                │
+│                                                          │
+│  ┌────────────┐  ┌────────────┐  ┌──────────────────┐   │
+│  │ Orchestrator│  │ Blackboard │  │ SSE Event Bus    │   │
+│  └──────┬─────┘  └────────────┘  └──────────────────┘   │
+│         │                                                │
+│         ▼                                                │
+│  ┌───────────────────────────────────────────────────┐   │
+│  │                Expert Agents                      │   │
+│  │   Tech │ Finance │ Risk │ Strategy                │   │
+│  └───────────────────────────────────────────────────┘   │
+│         │                                                │
+│         ├──────────────► LLM Provider                    │
+│         │                                                │
+│         └──────────────► Evidence / Web Search           │
+└──────────────────────────┬───────────────────────────────┘
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │  Supabase   │
+                    │ PostgreSQL  │
+                    └─────────────┘
+```
+
+---
+
+## 📁 Repository layout
+
+```text
 synthcouncil/
 ├── apps/
-│   ├── api/                  # Express + TypeScript engine (Render)
+│   ├── api/                         # Express + TypeScript engine
 │   │   └── src/
-│   │       ├── agents/       # one single-responsibility module per expert
-│   │       ├── evidence/     # Tavily / DuckDuckGo / Jina Reader / mock
-│   │       ├── llm/          # OpenRouter / Groq / custom / mock client
-│   │       ├── orchestrator/ # blackboard, DAG, engine, SSE bus
-│   │       ├── storage/      # memory (dev) + Supabase (prod)
-│   │       └── routes/       # REST + Server-Sent Events
-│   └── web/                  # Astro + React client (Netlify, static)
+│   │       ├── agents/              # Single-responsibility experts
+│   │       ├── evidence/            # Tavily / DuckDuckGo / Jina / mock
+│   │       ├── llm/                 # OpenRouter / Groq / custom / mock
+│   │       ├── orchestrator/        # Blackboard, DAG, engine, SSE
+│   │       ├── storage/             # Memory + Supabase
+│   │       └── routes/              # REST + Server-Sent Events
+│   │
+│   └── web/                         # Astro + React client
 │       └── src/
-│           ├── lib/webmcp.ts # document.modelContext.registerTool (the hackathon requirement)
-│           ├── components/   # council board, arbitration panel, WebMCP panel, …
-│           └── pages/        # index (convene) + council (?id=…) — static
+│           ├── lib/
+│           │   └── webmcp.ts        # WebMCP tool registration
+│           ├── components/          # Council UI + arbitration + WebMCP
+│           └── pages/               # Convene + council pages
+│
 ├── packages/
-│   └── schemas/              # shared Zod contracts (blackboard, agents, events, inputs)
-├── docs/                     # architecture, submission answers, video script, demo
-├── supabase… (migration in apps/api/supabase/migrations)
+│   └── schemas/                     # Shared Zod contracts
+│
+├── docs/                            # Architecture, demo & submission docs
+├── supabase/                        # Database migrations
 ├── netlify.toml
-└── render.yaml
+├── render.yaml
+├── package.json
+└── pnpm-workspace.yaml
 ```
 
-## 🚀 Quick start
+---
 
-**Prerequisites:** Node.js ≥ 20 and pnpm (`corepack enable`).
+# 🚀 Quick start
+
+## Requirements
+
+* Node.js ≥ 20
+* pnpm
+
+Enable Corepack if necessary:
+
+```bash
+corepack enable
+```
+
+Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-**Run the whole stack offline (no API keys needed):** the API falls back to a deterministic mock
-LLM + mock search, so the full debate runs in a sandbox.
+---
+
+## Run completely offline
+
+SynthCouncil includes deterministic mock implementations for both the LLM and evidence layers.
+
+No API keys are required.
+
+### Terminal 1 — API
 
 ```bash
-# terminal 1 — engine
-pnpm --filter @synthcouncil/api dev        # http://localhost:4000
-
-# terminal 2 — web client
-pnpm --filter @synthcouncil/web dev        # http://localhost:4321
+pnpm --filter @synthcouncil/api dev
 ```
 
-Open http://localhost:4321, click **Fill demo topic (AI meeting notes)** — a business scenario:
-*launch an AI meeting-notes SaaS with a freemium model and EU data residency* — convene the council,
-and watch the four agents investigate → debate → pause for **your** arbitration → deliver a verdict.
-Mock outputs are clearly labeled `[mock]`.
+API:
 
-**Run with a real LLM (recommended for demos):**
+```text
+http://localhost:4000
+```
+
+### Terminal 2 — Web client
+
+```bash
+pnpm --filter @synthcouncil/web dev
+```
+
+Web application:
+
+```text
+http://localhost:4321
+```
+
+Open the application and use **Fill demo topic** to load the example scenario.
+
+The complete council can then run using mock data.
+
+Mock outputs are clearly marked:
+
+```text
+[mock]
+```
+
+---
+
+# 🤖 Run with a real LLM
+
+Copy the environment template:
 
 ```bash
 cp apps/api/.env.example apps/api/.env
-# edit apps/api/.env → set OPENROUTER_API_KEY (https://openrouter.ai/keys)
 ```
 
-OpenRouter defaults to `groq/llama-3.3-70b-versatile` (fast, cheap). Any model can be selected per
-session or globally via `LLM_MODEL`. Alternatives: `GROQ_API_KEY` for direct Groq,
-`LLM_PROVIDER=custom` for any OpenAI-compatible endpoint, `LLM_PROVIDER=mock` to force offline mode.
+Then configure your provider.
 
-## 🔑 Configuration (`apps/api/.env`)
+### OpenRouter
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `PORT` | `4000` | Engine port |
-| `FRONTEND_URL` | `http://localhost:4321` | Comma-separated CORS allow-list |
-| `OPENROUTER_API_KEY` | — | OpenRouter key (recommended) |
-| `LLM_MODEL` | `groq/llama-3.3-70b-versatile` | Model id (OpenRouter or Groq) |
-| `GROQ_API_KEY` | — | Direct Groq alternative |
-| `LLM_PROVIDER` | auto | `openrouter` \| `groq` \| `custom` \| `mock` |
-| `CUSTOM_LLM_BASE_URL` / `LLM_API_KEY` | — | Any OpenAI-compatible endpoint |
-| `TAVILY_API_KEY` | — | Structured search (falls back to DuckDuckGo Lite) |
-| `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | — | PostgreSQL persistence (falls back to memory) |
-| `SEARCH_MOCK=true` | `false` | Fully offline evidence |
-| `LLM_TIMEOUT_MS` / `SEARCH_TIMEOUT_MS` / `FETCH_TIMEOUT_MS` | 90s/15s/12s | Outbound timeouts so a slow source never blocks the debate |
+```env
+OPENROUTER_API_KEY=your_key
+```
 
-## 🛰️ Deployment
+The default model is:
 
-- **Web (Netlify):** import the repo, build command comes from `netlify.toml` (`corepack enable &&
-  pnpm install --frozen-lockfile && pnpm --filter @synthcouncil/web build`). Set
-  `PUBLIC_API_URL` to your Render API. Static output — **zero API keys in the browser**.
-- **Engine (Render):** use the **Blueprint** (`render.yaml`). Set `OPENROUTER_API_KEY`,
-  `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` as secret env vars in the dashboard. Note: free Render
-  web services sleep after ~15 min of inactivity; the first request after sleep takes ~30-60 s.
-- **Database (Supabase):** run `apps/api/supabase/migrations/20260829_init_blackboard.sql` in the
-  SQL editor. Optional — without it, sessions live in memory.
+```text
+groq/llama-3.3-70b-versatile
+```
 
-## 🌐 WebMCP — what the browser's model can do
+You can select another compatible model with:
 
-The static site registers four tools through `document.modelContext.registerTool`
-(`apps/web/src/lib/webmcp.ts`):
+```env
+LLM_MODEL=your_model
+```
 
-| Tool | Purpose |
-| --- | --- |
-| `council_create` | Convene a session (topic, experts, rounds, arbitration flag) |
-| `council_start` | Launch the investigation |
-| `council_status` | Read the full blackboard (findings, positions, verdict) |
-| `council_direct` | Act as arbiter: inject a directive or proceed |
+### Direct Groq
 
-In the **ChatGPT desktop browser** or **Chrome 149+** (enable
-`chrome://flags/#enable-webmcp-testing`), the model driving the browser can run the entire council
-itself — the same actions a human takes in the UI.
+```env
+GROQ_API_KEY=your_key
+```
 
-## 🧪 Tests
+### Custom OpenAI-compatible endpoint
+
+```env
+LLM_PROVIDER=custom
+CUSTOM_LLM_BASE_URL=...
+LLM_API_KEY=...
+```
+
+### Offline mode
+
+```env
+LLM_PROVIDER=mock
+```
+
+---
+
+# 🔑 Configuration
+
+Configuration lives in:
+
+```text
+apps/api/.env
+```
+
+| Variable               | Default                        | Purpose                                   |
+| ---------------------- | ------------------------------ | ----------------------------------------- |
+| `PORT`                 | `4000`                         | API port                                  |
+| `FRONTEND_URL`         | `http://localhost:4321`        | CORS allow-list                           |
+| `OPENROUTER_API_KEY`   | —                              | OpenRouter API key                        |
+| `LLM_MODEL`            | `groq/llama-3.3-70b-versatile` | Model identifier                          |
+| `GROQ_API_KEY`         | —                              | Direct Groq alternative                   |
+| `LLM_PROVIDER`         | `auto`                         | `openrouter`, `groq`, `custom`, or `mock` |
+| `CUSTOM_LLM_BASE_URL`  | —                              | OpenAI-compatible endpoint                |
+| `LLM_API_KEY`          | —                              | Custom endpoint key                       |
+| `TAVILY_API_KEY`       | —                              | Structured web search                     |
+| `SUPABASE_URL`         | —                              | Supabase project URL                      |
+| `SUPABASE_SERVICE_KEY` | —                              | Supabase service key                      |
+| `SEARCH_MOCK`          | `false`                        | Force offline evidence                    |
+| `LLM_TIMEOUT_MS`       | `90000`                        | LLM timeout                               |
+| `SEARCH_TIMEOUT_MS`    | `15000`                        | Search timeout                            |
+| `FETCH_TIMEOUT_MS`     | `12000`                        | Page fetch timeout                        |
+
+---
+
+# 🛰️ Deployment
+
+SynthCouncil is designed as a split deployment:
+
+```text
+Netlify
+  │
+  │ static web client
+  ▼
+SynthCouncil Web
+  │
+  │ REST + SSE
+  ▼
+Render
+  │
+  │ API / orchestration
+  ▼
+Supabase
+  │
+  ▼
+PostgreSQL
+```
+
+### Web — Netlify
+
+Import the repository into Netlify.
+
+The build command is defined in:
+
+```text
+netlify.toml
+```
+
+The web client is static and contains no server-side API secrets.
+
+Set:
+
+```env
+PUBLIC_API_URL=https://your-render-api
+```
+
+### Engine — Render
+
+Use the included:
+
+```text
+render.yaml
+```
+
+Configure the required secrets in the Render dashboard.
+
+> **Note:** Free Render web services may sleep after inactivity, so the first request after a cold start can take longer.
+
+### Database — Supabase
+
+Run the migration located in:
+
+```text
+apps/api/supabase/migrations/
+```
+
+Supabase persistence is optional.
+
+Without it, SynthCouncil can operate with in-memory session storage.
+
+---
+
+# 🧪 Tests
+
+Run the API test suite:
 
 ```bash
-pnpm --filter @synthcouncil/api test       # 17 tests: JSON contracts, blackboard reducers, full DAG with mock LLM
-pnpm -r typecheck                          # strict TS across all workspaces
-pnpm -r build                              # contracts + API bundle + static web
+pnpm --filter @synthcouncil/api test
 ```
 
-## 📄 License
+Run TypeScript checks:
 
-SynthCouncil is licensed under the GNU General Public License v3.0 (GPL-3.0-only).
-See [LICENSE](./LICENSE) for details.
+```bash
+pnpm -r typecheck
+```
+
+Build all workspaces:
+
+```bash
+pnpm -r build
+```
+
+The test suite covers:
+
+* Zod contracts;
+* blackboard reducers;
+* orchestration;
+* the complete debate DAG;
+* deterministic mock execution.
+
+---
+
+# 🔒 Design principles
+
+SynthCouncil follows a few deliberate principles.
+
+### 1. The model is not the application
+
+The LLM is replaceable.
+
+SynthCouncil can work with:
+
+* OpenRouter;
+* Groq;
+* another OpenAI-compatible provider;
+* a custom endpoint;
+* deterministic mocks.
+
+---
+
+### 2. The agent is not the authority
+
+The agent can orchestrate the investigation.
+
+The human retains the ability to:
+
+* inspect the evidence;
+* challenge assumptions;
+* redirect the investigation;
+* continue;
+* stop.
+
+---
+
+### 3. Disagreement is a feature
+
+Experts are intentionally separated by responsibility.
+
+The system does not optimize for immediate agreement.
+
+It optimizes for:
+
+```text
+Independent analysis
+        ↓
+Evidence
+        ↓
+Conflict
+        ↓
+Revision
+        ↓
+Human arbitration
+        ↓
+Decision
+```
+
+---
+
+### 4. WebMCP exposes capabilities, not a second application
+
+The WebMCP tools map to the same operations available in the human-facing application.
+
+This keeps the agent interaction layer small, explicit, and testable.
+
+---
+
+# 🛠️ Technology
+
+* **Astro + React** — web client
+* **TypeScript** — application and engine
+* **Express** — API
+* **WebMCP** — agent-facing web capabilities
+* **Zod** — runtime contracts and validation
+* **Server-Sent Events** — live council updates
+* **OpenRouter / Groq / custom OpenAI-compatible endpoints** — LLM providers
+* **Tavily / DuckDuckGo / Jina Reader** — evidence retrieval
+* **Supabase / PostgreSQL** — persistence
+* **Netlify** — web deployment
+* **Render** — API deployment
+
+---
+
+# 💡 The idea in one sentence
+
+> **SynthCouncil turns AI decision-making into an adversarial, evidence-backed council where agents investigate and challenge each other, while a human keeps the final word — and WebMCP makes that council directly operable by browser agents.**
+
+---
+
+# 📄 License
+
+SynthCouncil is licensed under the **GNU General Public License v3.0 (GPL-3.0-only)**.
+
+See `LICENSE` for details.
+
+---
+
+## 👤 Author
+
+Built by **Lamanirevegrand** for the **OpenAI WebMCP Hackathon**.
