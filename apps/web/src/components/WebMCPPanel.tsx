@@ -1,19 +1,48 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { API_ENDPOINTS } from '../env';
 import { getRegisteredTools, isWebMCPAvailable, registerWebMCPTools } from '../lib/webmcp';
 
+const POLL_INTERVAL_MS = 700;
+const POLL_LIMIT = 15; // ~10 s, then stop and let the manual button take over.
+
 /**
- * WebMCP status panel: is the browser's model context available, which council
- * tools are registered, and the exact registerTool call this repo ships.
+ * WebMCP status panel. Registration itself is automatic (see WebMCPRegistrar
+ * in the layout); this panel only observes and displays the real state:
+ * context missing, context present but tools not yet registered, or tools
+ * registered and ready for the browser's model.
  */
 export default function WebMCPPanel() {
   const [available, setAvailable] = useState(() => isWebMCPAvailable());
   const [tools, setTools] = useState(() => getRegisteredTools());
+
+  useEffect(() => {
+    let stopped = false;
+    let ticks = 0;
+
+    const refresh = () => {
+      if (stopped) return;
+      setAvailable(isWebMCPAvailable());
+      setTools(getRegisteredTools());
+      ticks += 1;
+      if (ticks < POLL_LIMIT) {
+        window.setTimeout(refresh, POLL_INTERVAL_MS);
+      }
+    };
+
+    refresh();
+    return () => {
+      stopped = true;
+    };
+  }, []);
 
   const handleRegister = () => {
     const result = registerWebMCPTools();
     setAvailable(result.available);
     setTools(getRegisteredTools());
   };
+
+  const status =
+    !available ? 'off' : tools.length === 0 ? 'pending' : 'ready';
 
   const snippet = useMemo(
     () => `document.modelContext.registerTool({
@@ -28,7 +57,7 @@ export default function WebMCPPanel() {
   },
   execute: async (input) => {
     // Relay to the SynthCouncil engine (no API keys in the browser)
-    const response = await fetch("https://synthcouncil-api.onrender.com/api/sessions", {
+    const response = await fetch(${JSON.stringify(API_ENDPOINTS.sessions)}, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ topic: input.topic })
@@ -45,15 +74,25 @@ export default function WebMCPPanel() {
         <h3>
           <span className="dot" aria-hidden /> WebMCP bridge
         </h3>
-        <span className={`pill ${available ? 'pill-ok' : 'pill-off'}`}>
-          {available ? 'Model context detected' : 'Browser not WebMCP-enabled'}
+        <span
+          className={`pill ${
+            status === 'ready' ? 'pill-ok' : status === 'pending' ? 'pill-wait' : 'pill-off'
+          }`}
+        >
+          {status === 'ready'
+            ? `Model context detected · ${tools.length} tool(s) registered`
+            : status === 'pending'
+              ? 'Model context present — tools registering…'
+              : 'Browser not WebMCP-enabled'}
         </span>
       </div>
 
       <p className="muted" style={{ fontSize: '0.9rem' }}>
-        The council is exposed to the browser's model via <code>document.modelContext.registerTool</code>.
-        In the ChatGPT desktop browser or Chrome 149+ (flag <code>chrome://flags/#enable-webmcp-testing</code>),
-        the model can convene, run, read and arbitrate councils — exactly like a human in the UI.
+        The council tools register <strong>automatically on every page</strong> via{' '}
+        <code>document.modelContext.registerTool</code>. In the ChatGPT desktop browser or Chrome
+        149+ (flag <code>chrome://flags/#enable-webmcp-testing</code>), ask the model to use the
+        SynthCouncil tools <em>on the current page</em> — it can convene, run, read and arbitrate
+        councils, exactly like a human in the UI.
       </p>
 
       <div className="tool-grid">
