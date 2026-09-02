@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import WebMCPRegistrar from "../components/WebMCPRegistrar";
 ---
 
 <!doctype html>
@@ -35,6 +36,9 @@ import "../styles/global.css";
         </nav>
       </div>
     </header>
+
+    <!-- Registers the council's WebMCP tools on every page, automatically. -->
+    <WebMCPRegistrar client:load />
 
     <main class="container">
       <slot />
